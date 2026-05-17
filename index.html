@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora SUNAT 2026</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+  <h1>🧮 Calculadora SUNAT 2026</h1>
+  <p class="subtitle">Comprobantes Electrónicos — Catálogos N.º 03, 05, 07 y 53</p>
+
+  <!-- Configuración del Comprobante -->
+  <section>
+    <h2>⚙️ Configuración del Comprobante</h2>
+    <div class="row">
+      <div class="col">
+        <label>Tipo de Comprobante</label>
+        <select id="tipoComprobante">
+          <option value="03">03 — Boleta de Venta</option>
+          <option value="01">01 — Factura</option>
+          <option value="07">07 — Nota de Crédito</option>
+          <option value="08">08 — Nota de Débito</option>
+        </select>
+      </div>
+      <div class="col">
+        <label>Serie</label>
+        <input type="text" id="serie" value="B001" maxlength="4">
+      </div>
+      <div class="col">
+        <label>Correlativo <span id="correlativoInfo" class="hint"></span></label>
+        <input type="number" id="correlativo" value="1" min="1">
+      </div>
+      <div class="col">
+        <label>Moneda</label>
+        <select id="moneda">
+          <option value="PEN">PEN — Soles</option>
+          <option value="USD">USD — Dólares</option>
+          <option value="EUR">EUR — Euros</option>
+        </select>
+      </div>
+      <div class="col">
+        <label>Fecha de Emisión</label>
+        <input type="date" id="fechaEmision">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <label>Tipo de Operación (Cat.51)</label>
+        <select id="tipoOperacion">
+          <option value="0101">0101 — Venta interna</option>
+          <option value="0112">0112 — Gasto deducible persona natural</option>
+          <option value="0200">0200 — Exportación de bienes</option>
+          <option value="0201">0201 — Exportación servicios (Perú)</option>
+          <option value="0401">0401 — Ventas a no domiciliados (no exportación)</option>
+          <option value="1001">1001 — Operación sujeta a detracción</option>
+          <option value="2001">2001 — Operación sujeta a percepción</option>
+        </select>
+      </div>
+      <div class="col">
+        <label>Régimen IGV</label>
+        <select id="regimenIgv">
+          <option value="18">General — 18% (15.5% IGV + 2.5% IPM en 2026)</option>
+          <option value="10.5">MYPE turismo — 10.5% (8% IGV + 2.5% IPM)</option>
+        </select>
+      </div>
+      <div class="col">
+        <label>&nbsp;</label>
+        <div class="info-badge" id="regimenInfo">Tasa global aplicable a operaciones gravadas.</div>
+      </div>
+    </div>
+
+    <h3 style="font-size:0.85rem;color:#666;margin:0.8rem 0 0.4rem">▸ Emisor</h3>
+    <div class="row">
+      <div class="col">
+        <label>RUC</label>
+        <input type="text" id="emisorRuc" value="20123456789" maxlength="11">
+      </div>
+      <div class="col" style="flex:2">
+        <label>Razón Social</label>
+        <input type="text" id="emisorRazon" value="MI EMPRESA S.A.C.">
+      </div>
+      <div class="col" style="flex:2">
+        <label>Dirección Fiscal</label>
+        <input type="text" id="emisorDireccion" value="Av. Principal 123, Lima">
+      </div>
+    </div>
+
+    <h3 style="font-size:0.85rem;color:#666;margin:0.8rem 0 0.4rem">▸ Receptor (cliente)</h3>
+    <div class="row">
+      <div class="col">
+        <label>Tipo de Documento</label>
+        <select id="receptorTipoDoc">
+          <option value="1">1 — DNI</option>
+          <option value="6">6 — RUC</option>
+          <option value="4">4 — Carnet Extranjería</option>
+          <option value="7">7 — Pasaporte</option>
+          <option value="0">0 — Sin documento</option>
+        </select>
+      </div>
+      <div class="col">
+        <label>Número de Documento</label>
+        <input type="text" id="receptorDoc" value="00000000">
+      </div>
+      <div class="col" style="flex:2">
+        <label>Nombre / Razón Social</label>
+        <input type="text" id="receptorRazon" value="CLIENTE VARIOS">
+      </div>
+      <div class="col" style="flex:2">
+        <label>Dirección</label>
+        <input type="text" id="receptorDireccion" value="-">
+      </div>
+    </div>
+    <div id="avisoReceptor" class="aviso" style="display:none">
+      ℹ️ Para <b>Factura (01)</b> el receptor debe tener <b>RUC</b>. Para <b>Boleta (03)</b> se acepta DNI u otro documento.
+    </div>
+  </section>
+
+  <!-- Producto -->
+  <section>
+    <h2>📦 Producto / Servicio</h2>
+    <div class="row">
+      <div class="col" style="flex:0.4">
+        <label>Código</label>
+        <input type="text" id="codigoProducto" value="001" placeholder="Cód. producto">
+      </div>
+      <div class="col">
+        <label>Producto</label>
+        <select id="producto"></select>
+      </div>
+      <div class="col">
+        <label>Personalizado</label>
+        <input type="text" id="productoCustom" placeholder="Nombre del producto" disabled>
+      </div>
+      <div class="col">
+        <label>Unidad (Cat.03)</label>
+        <select id="unidad"></select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <label>Cantidad</label>
+        <input type="number" id="cantidad" value="1" min="0" step="0.0001">
+      </div>
+      <div class="col">
+        <label>Afectación IGV (Cat.07)</label>
+        <select id="afectacion"></select>
+      </div>
+    </div>
+  </section>
+
+  <!-- Precio -->
+  <section>
+    <h2>💰 Precio</h2>
+    <div class="row">
+      <div class="col">
+        <label>Precio Unitario S/</label>
+        <input type="number" id="precioUnit" value="100" min="0" step="10">
+      </div>
+      <div class="col">
+        <label>Tipo de Precio</label>
+        <select id="tipoPrecio">
+          <option value="incluido">Con IGV incluido</option>
+          <option value="sin_igv">Sin IGV (valor neto)</option>
+        </select>
+      </div>
+      <div class="col">
+        <label>Tributo (Cat.05)</label>
+        <select id="tributo"></select>
+      </div>
+    </div>
+    <div class="row" id="tasaRow">
+      <div class="col">
+        <label for="tasaInput">Tasa del tributo (%)</label>
+        <input type="number" id="tasaInput" value="18" min="0" max="100" step="0.01">
+      </div>
+      <div class="col" id="tasaInfo">
+        <label>&nbsp;</label>
+        <div class="info-badge">Tasa: 18%</div>
+      </div>
+    </div>
+    <div id="avisoCombinacion" class="aviso" style="display:none"></div>
+  </section>
+
+  <!-- Botón Agregar Producto -->
+  <section>
+    <div class="row" style="margin-bottom:0">
+      <div class="col">
+        <button class="btn-primary" onclick="agregarItem()" style="width:100%">➕ Agregar producto a la lista</button>
+      </div>
+      <div class="col">
+        <span class="info-badge" id="productCount">0 productos en la lista</span>
+      </div>
+    </div>
+    <div id="productList" class="product-list"><p class="empty-list">Aún no hay productos agregados.</p></div>
+  </section>
+
+  <!-- Cargo/Descuento del Ítem -->
+  <section>
+    <h2>🔻🔺 Cargo / Descuento del Ítem (Cat.53)</h2>
+    <p class="subtitle" style="margin-bottom:0.8rem">
+      Aplica a una línea específica del comprobante. Esta calculadora admite <b>1 código por ítem</b>;
+      UBL 2.1 SUNAT permite múltiples por línea (cardinalidad <code>0..n</code>) — quedan los globales para sumar varios efectos.
+    </p>
+    <div class="row">
+      <div class="col">
+        <label>Código</label>
+        <select id="codigo53"></select>
+      </div>
+      <div class="col">
+        <label>Modo</label>
+        <select id="modoOp">
+          <option value="porcentaje">Porcentaje (%)</option>
+          <option value="monto">Monto fijo (S/)</option>
+        </select>
+      </div>
+      <div class="col">
+        <label id="labelOp">Porcentaje (%)</label>
+        <input type="number" id="valorOp" value="0" min="0" step="0.5">
+      </div>
+    </div>
+    <div class="row" id="infoRow53">
+      <div class="col-full">
+        <span id="desc53Info" class="info-badge">Descuento | Ítem | Afecta BI: Sí</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Globales del Comprobante (Cat.53 nivel Global) -->
+  <section>
+    <h2>🌐 Globales del Comprobante (Cat.53 Global)</h2>
+    <p class="subtitle" style="margin-bottom:0.8rem">Descuentos, cargos y percepciones que se aplican al comprobante completo (no a un ítem en particular).</p>
+    <div class="row">
+      <div class="col">
+        <label>Código Global</label>
+        <select id="codigo53Global"></select>
+      </div>
+      <div class="col">
+        <label>Modo</label>
+        <select id="modoOpGlobal">
+          <option value="porcentaje">Porcentaje (%)</option>
+          <option value="monto">Monto fijo (S/)</option>
+        </select>
+      </div>
+      <div class="col">
+        <label id="labelOpGlobal">Porcentaje (%)</label>
+        <input type="number" id="valorOpGlobal" value="0" min="0" step="0.5">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-full">
+        <span id="desc53GlobalInfo" class="info-badge">—</span>
+      </div>
+    </div>
+    <div class="row" style="margin-bottom:0">
+      <div class="col">
+        <button class="btn-primary" onclick="agregarGlobal()" style="width:100%">➕ Agregar global al comprobante</button>
+      </div>
+      <div class="col">
+        <span class="info-badge" id="globalesCount">0 global(es)</span>
+      </div>
+    </div>
+    <div id="globalesList" class="product-list"><p class="empty-list">Aún no hay descuentos/cargos globales.</p></div>
+  </section>
+
+  <!-- Resultado -->
+  <section class="result-section">
+    <h2>🧮 Calculadora 2026</h2>
+    <div id="resultados"></div>
+  </section>
+
+  <!-- Resumen Item + Totales -->
+  <section>
+    <h2>📋 Comprobante Electrónico</h2>
+    <h3 style="font-size:0.85rem;color:#666;margin-bottom:0.4rem">▸ Detalle del Ítem</h3>
+    <div class="table-wrapper">
+      <table id="excelTable">
+        <thead id="excelHead"></thead>
+        <tbody id="excelBody"></tbody>
+      </table>
+    </div>
+    <h3 style="font-size:0.85rem;color:#666;margin:1rem 0 0.4rem">▸ Resumen del Comprobante</h3>
+    <div class="table-wrapper summary-wrapper" id="summaryContainer"></div>
+    <p class="footnote">Fuente: Anexo N.º 8 — Catálogo SUNAT (anexo2442019.html) y Guía UBL 2.1 (ubl2.1.html)</p>
+  </section>
+
+  <!-- Vista Previa Comprobante -->
+  <section>
+    <h2>📄 Vista Previa — Comprobante Electrónico</h2>
+    <div id="comprobantePreview"></div>
+  </section>
+
+  <!-- Justificación Normativa -->
+  <section class="norma-section">
+    <h2>📚 Justificación Normativa</h2>
+    <p class="subtitle" style="margin-bottom:1rem">
+      Cada regla de cálculo de esta calculadora está basada en normativa SUNAT verificable.
+      Datos vigentes a <b>mayo 2026</b>. Las fuentes son SUNAT, El Peruano y la Guía Técnica UBL 2.1 del SEE.
+      Hace clic en cada tarjeta para ver detalle, ejemplo aplicado y la URL oficial.
+    </p>
+
+    <details class="norma-card" open>
+      <summary><b>1. Marco general — Sistema de Emisión Electrónica (SEE)</b></summary>
+      <div class="norma-body">
+        <p>Esta calculadora produce el XML conforme al estándar <b>UBL 2.1</b> con <code>CustomizationID = "2.0"</code>.
+        El marco normativo está dado por:</p>
+        <ul>
+          <li><b>R.S. 097-2012/SUNAT</b> — crea el SEE para facturas electrónicas.</li>
+          <li><b>R.S. 188-2010/SUNAT</b> — boletas electrónicas.</li>
+          <li><b>R.S. 117-2017/SUNAT</b> — adopción de UBL 2.1.</li>
+          <li><b>R.S. 114-2019/SUNAT</b> (Anexo VII) — Estándar UBL 2.1 actualizado.</li>
+          <li><b>R.S. 244-2019/SUNAT</b> (Anexo N.º 8) — catálogos de códigos vigentes.</li>
+          <li><b>R.S. 252-2019/SUNAT</b> — actualización Catálogo 51 (Tipo de Operación).</li>
+          <li><b>R.S. 000047-2026/SUNAT</b> — nuevas reglas de validación CPE (tolerancia ±S/0.05) desde 10-feb-2026.</li>
+        </ul>
+        <p class="src">📎 <a href="https://cpe.sunat.gob.pe/guias-y-manuales" target="_blank" rel="noopener">cpe.sunat.gob.pe/guias-y-manuales</a></p>
+      </div>
+    </details>
+
+    <details class="norma-card">
+      <summary><b>2. IGV — Impuesto General a las Ventas (Cat.05 1000)</b></summary>
+      <div class="norma-body">
+        <p><b>Tasa vigente 2026: 18%</b> (compuesto por 15.5% IGV + 2.5% IPM, modificado por <b>Ley 32387</b> del 16-jun-2025).
+        La redistribución interna IGV/IPM <b>no aparece en el XML</b> — el contribuyente sigue viendo 18% total.</p>
+        <p><b>Régimen MYPE turismo: 10.5%</b> (8% IGV + 2.5% IPM) — vigente hasta el 31-dic-2026 para MYPE de restaurantes, hoteles y alojamientos turísticos con ingresos &lt; 1700 UIT y ≥70% de ingresos en esas actividades.</p>
+        <p><b>Cómo lo aplica esta calculadora:</b> usa la tasa configurada en "Régimen IGV" del comprobante, override solo para tributo 1000 (IGV); se calcula <code>IGV = Base × tasa</code> sobre la base imponible final (ya con descuentos a nivel ítem y globales que afectan BI aplicados).</p>
+        <p><b>Base normativa:</b></p>
+        <ul>
+          <li>TUO de la Ley del IGV — <b>D.S. 055-99-EF</b></li>
+          <li>Reglamento del IGV — <b>D.S. 029-94-EF</b></li>
+          <li><b>Ley 32387</b> (redistribución IGV/IPM 2026-2029)</li>
+        </ul>
+        <p class="src">📎 <a href="https://emprender.sunat.gob.pe/principales-impuestos/impuesto-general-las-ventas-igv/impuesto-general-las-ventas" target="_blank" rel="noopener">SUNAT — IGV</a> · <a href="https://orientacion.sunat.gob.pe/reduccion-del-igv-para-restaurantes-hoteles-y-alojamiento-turisticos-1" target="_blank" rel="noopener">SUNAT — MYPE turismo</a></p>
+      </div>
+    </details>
+
+    <details class="norma-card">
+      <summary><b>3. IVAP — Impuesto a la Venta de Arroz Pilado (Cat.05 1016)</b></summary>
+      <div class="norma-body">
+        <p><b>Tasa: 4%</b> sobre el valor de la primera venta nacional, o sobre valor CIF + derechos aduaneros (sin incluir IVAP) en importación.</p>
+        <p><b>Cómo lo aplica esta calculadora:</b> tributo 1016 con tasa fija 0.04 en CAT05; se selecciona junto con afectación 17 (Gravado-IVAP) o 36 (Inafecto-IVAP).</p>
+        <p><b>Base normativa:</b> <b>Ley 28211</b> (creación), modificada por <b>Ley 30978</b>.</p>
+        <p class="src">📎 <a href="https://orientacion.sunat.gob.pe/3412-02-contribuyentes-base-imponible-y-tasa-del-impuesto" target="_blank" rel="noopener">SUNAT — IVAP</a> · <a href="https://busquedas.elperuano.pe/normaslegales/ley-que-modifica-la-ley-28211-ley-que-crea-el-impuesto-a-la-ley-n-30978-1786182-1/" target="_blank" rel="noopener">El Peruano — Ley 30978</a></p>
+      </div>
+    </details>
+
+    <details class="norma-card">
+      <summary><b>4. ICBPER — Impuesto a Bolsas Plásticas (Cat.05 7152)</b></summary>
+      <div class="norma-body">
+        <p><b>Monto vigente 2026: S/ 0.50 por bolsa.</b> La escala progresiva culminó en 2023 y se mantiene fija a partir de ese año.</p>
+        <table class="mini">
+          <thead><tr><th>Año</th><th>Monto S/ por bolsa</th></tr></thead>
+          <tbody>
+            <tr><td>2019</td><td>0.10</td></tr>
+            <tr><td>2020</td><td>0.20</td></tr>
+            <tr><td>2021</td><td>0.30</td></tr>
+            <tr><td>2022</td><td>0.40</td></tr>
+            <tr><td><b>2023 →</b></td><td><b>0.50</b></td></tr>
+          </tbody>
+        </table>
+        <p><b>Cómo lo aplica esta calculadora:</b> es el único tributo con <code>modo: "unit"</code>; se calcula como <code>cantidad × monto_fijo</code> (no es porcentaje sobre base) y se reporta en el XML como <code>cac:TaxSubtotal</code> con <code>cbc:PerUnitAmount</code> y <code>TaxTypeCode "OTH"</code>.</p>
+        <p><b>Base normativa:</b> <b>Ley 30884</b> (regula plásticos de un solo uso).</p>
+        <p class="src">📎 <a href="https://www.gob.pe/7941-impuesto-al-consumo-de-las-bolsas-de-plastico-icbp" target="_blank" rel="noopener">gob.pe — ICBPER</a></p>
+      </div>
+    </details>
+
+    <details class="norma-card">
+      <summary><b>5. Percepciones — Cat.53 códigos 51 / 52 / 53</b></summary>
+      <div class="norma-body">
+        <table class="mini">
+          <thead><tr><th>Cód.</th><th>Concepto</th><th>Tasa</th></tr></thead>
+          <tbody>
+            <tr><td>51</td><td>Percepción venta interna</td><td>2%</td></tr>
+            <tr><td>52</td><td>Percepción adquisición combustible</td><td>1%</td></tr>
+            <tr><td>53</td><td>Percepción agente con tasa especial</td><td>0.5%</td></tr>
+          </tbody>
+        </table>
+        <p><b>Base de cálculo: Precio de Venta = Base + IGV</b> (NO solo la base imponible).
+        Ejemplo SUNAT: venta S/ 4,500 + IGV S/ 810 = total S/ 5,310 → percepción 2% = <b>S/ 106.20</b>.</p>
+        <p><b>Cómo lo aplica esta calculadora:</b> los códigos 51/52/53 viven en CAT53 con <code>base: "base+igv"</code> y se procesan en una <b>segunda pasada</b> en <code>calcComprobante</code>, después de aplicar descuentos/cargos globales que afectan BI — así la percepción usa el total ya ajustado.</p>
+        <p><b>Umbral consumidor final: S/ 1,500.</b> No corresponde aplicar percepción a operaciones &lt; S/ 1,500 a consumidor final (D.S. 317-2014-EF que elevó el umbral de S/700 a S/1,500). La calculadora muestra aviso cuando detecta esta situación.</p>
+        <p><b>Base normativa:</b> <b>Ley 29173</b>, modificada por <b>Ley 30230</b> y <b>D.S. 317-2014-EF</b>.</p>
+        <p class="src">📎 <a href="https://orientacion.sunat.gob.pe/02-regimen-de-percepciones-venta-interna" target="_blank" rel="noopener">SUNAT — Percepciones venta interna</a> · <a href="https://www.sunat.gob.pe/legislacion/tributaria/percepciones/Ley-29173.doc" target="_blank" rel="noopener">Ley 29173</a></p>
+      </div>
+    </details>
+
+    <details class="norma-card">
+      <summary><b>6. Descuentos y cargos (Cat.53) — ítem y global coexisten</b></summary>
+      <div class="norma-body">
+        <p>El Catálogo 53 separa explícitamente cada código por <b>Nivel</b>: <b>Ítem</b> (línea individual) o <b>Global</b> (comprobante completo).
+        Son <b>rutas XML distintas y no excluyentes</b> en UBL 2.1:</p>
+        <ul>
+          <li>Nivel ítem → <code>/Invoice/cac:InvoiceLine/cac:AllowanceCharge</code> — cardinalidad <code>0..n</code></li>
+          <li>Nivel global → <code>/Invoice/cac:AllowanceCharge</code> — cardinalidad <code>0..n</code></li>
+        </ul>
+        <p>La Guía SUNAT (sección 21, Descuentos Globales) afirma literalmente: <i>"Este campo no debe ser usado para contener la suma de los descuentos de línea o ítem"</i> — confirma que son conceptos independientes y pueden coexistir en el mismo comprobante.</p>
+        <p><b>Cómo lo aplica esta calculadora:</b></p>
+        <ul>
+          <li>La sección "Cargo / Descuento del Ítem" solo lista códigos con nivel "Ítem" (00, 01, 07, 47, 48, 54).</li>
+          <li>La sección "Globales del Comprobante" solo lista códigos con nivel "Global" (02-06, 45-46, 49-53, 61).</li>
+          <li>Cada ítem puede llevar UN código Cat.53; el comprobante puede llevar MÚLTIPLES globales en lista.</li>
+          <li>Los códigos con <code>ab=true</code> (afecta BI) recalculan el IGV; los con <code>ab=false</code> solo ajustan el total.</li>
+          <li><b>Orden de aplicación</b> (alineado con SUNAT): primero descuentos/cargos por línea → suma → globales que afectan BI → re-cálculo IGV → globales que no afectan BI → percepciones sobre el nuevo Base+IGV.</li>
+        </ul>
+        <p><b>Limitación conocida:</b> UBL 2.1 permite múltiples <code>AllowanceCharge</code> por línea (ej. descuento por volumen + cargo por instalación); esta calculadora admite solo uno por ítem por simplicidad de UI.</p>
+        <p class="src">📎 <a href="https://www.sunat.gob.pe/legislacion/superin/2019/anexoVII-114-2019.pdf" target="_blank" rel="noopener">Anexo VII R.S. 114-2019 (Estándar UBL 2.1)</a> · <a href="https://cpe.sunat.gob.pe/sites/default/files/inline-files/guia+xml+factura+version%202-1+1+0%20(2)_0%20(2).pdf" target="_blank" rel="noopener">Guía Factura UBL 2.1</a></p>
+      </div>
+    </details>
+
+    <details class="norma-card">
+      <summary><b>7. Reglas de cálculo y redondeo</b></summary>
+      <div class="norma-body">
+        <p><b>Precisión de campos UBL (Anexo VII):</b></p>
+        <ul>
+          <li><b>Precios unitarios</b> (<code>cbc:PriceAmount</code>): formato <code>n(12,10)</code> → hasta 10 decimales.</li>
+          <li><b>Montos totales</b> (<code>cbc:TaxableAmount</code>, <code>cbc:TaxAmount</code>, <code>cbc:PayableAmount</code>): <code>n(12,2)</code> → 2 decimales.</li>
+          <li><b>Tasa</b> (<code>cbc:Percent</code>): <code>n(3,5)</code> → 5 decimales.</li>
+        </ul>
+        <p><b>Estrategia:</b> mantener cálculos internos con máxima precisión (valores "raw" sin redondear) y aplicar <code>ROUND_HALF_UP</code> a 2 decimales <b>solo al resultado final</b>. Esta calculadora muestra la columna "Valor Raw" en el proceso para que veas la diferencia.</p>
+        <p><b>Tolerancia oficial vigente:</b> <b>±S/ 0.05</b> (R.S. 000047-2026/SUNAT, desde 10-feb-2026) — errores 3291 (cálculo IGV incorrecto) y observación 4290 (montos fuera de tolerancia).</p>
+        <p><b>Redondeo del total:</b> el campo opcional <code>cbc:PayableRoundingAmount</code> permite registrar el ajuste cuando el negocio decide redondear el total a múltiplos (ej. eliminar céntimos). En esta calculadora se mantiene en 0.00 por defecto.</p>
+        <p class="src">📎 <a href="https://www.sunat.gob.pe/legislacion/superin/2019/anexoVII-114-2019.pdf" target="_blank" rel="noopener">Anexo VII R.S. 114-2019</a></p>
+      </div>
+    </details>
+
+    <details class="norma-card">
+      <summary><b>8. UBL 2.1 — namespaces, root y firma</b></summary>
+      <div class="norma-body">
+        <p>El XML generado usa los siguientes namespaces UBL/W3C/SUNAT:</p>
+        <ul>
+          <li><code>xmlns</code> raíz: <code>urn:oasis:names:specification:ubl:schema:xsd:Invoice-2</code> (o CreditNote-2 / DebitNote-2)</li>
+          <li><code>cac</code>: CommonAggregateComponents-2</li>
+          <li><code>cbc</code>: CommonBasicComponents-2</li>
+          <li><code>ext</code>: CommonExtensionComponents-2 (para firma)</li>
+          <li><code>ds</code>: <code>http://www.w3.org/2000/09/xmldsig#</code> (XMLDSig)</li>
+          <li><code>sac</code>: SunatAggregateComponents-1 (extensiones SUNAT)</li>
+        </ul>
+        <p>Estructura mínima generada: <code>UBLExtensions → UBLVersionID (2.1) → CustomizationID (2.0) → ID → IssueDate → InvoiceTypeCode → DocumentCurrencyCode → Signature → AccountingSupplierParty → AccountingCustomerParty → AllowanceCharge[] (globales) → TaxTotal → LegalMonetaryTotal → InvoiceLine[]</code>.</p>
+        <p><b>Limitación:</b> la firma digital XMLDSig queda como placeholder dentro de <code>UBLExtensions</code> — debe ser inyectada por un firmador con certificado del emisor antes de enviar al SEE-SUNAT.</p>
+        <p class="src">📎 <a href="https://cpe.sunat.gob.pe/sites/default/files/inline-files/guia+xml+factura+version%202-1+1+0%20(2)_0%20(2).pdf" target="_blank" rel="noopener">Guía Factura UBL 2.1</a> · <a href="https://cpe.sunat.gob.pe/sites/default/files/inline-files/guia+xml+boleta+version%202-1+1+0_0_0%20(2).pdf" target="_blank" rel="noopener">Guía Boleta UBL 2.1</a></p>
+      </div>
+    </details>
+
+    <details class="norma-card">
+      <summary><b>9. Catálogos SUNAT utilizados</b></summary>
+      <div class="norma-body">
+        <table class="mini">
+          <thead><tr><th>Cat.</th><th>Concepto</th><th>Fuente</th></tr></thead>
+          <tbody>
+            <tr><td>01</td><td>Tipo de comprobante (01 Factura, 03 Boleta, 07 NC, 08 ND, 40 C.Percepción…)</td><td>R.S. 318-2017 Anexo V</td></tr>
+            <tr><td>03</td><td>Unidad de medida (UN/ECE rec 20)</td><td>UN/ECE Rec 20</td></tr>
+            <tr><td>05</td><td>Tributos (1000 IGV, 1016 IVAP, 2000 ISC, 7152 ICBPER, 9995-9999)</td><td>R.S. 244-2019 Anexo 8</td></tr>
+            <tr><td>06</td><td>Tipo doc identidad (1 DNI, 4 CE, 6 RUC, 7 Pasaporte)</td><td>R.S. 244-2019 Anexo 8</td></tr>
+            <tr><td>07</td><td>Afectación IGV (10-17 Gravado, 20 Exonerado, 30-36 Inafecto, 40 Exportación)</td><td>R.S. 244-2019 Anexo 8</td></tr>
+            <tr><td>16</td><td>Tipo de precio (01 Precio unitario incluyendo IGV)</td><td>R.S. 244-2019 Anexo 8</td></tr>
+            <tr><td>51</td><td>Tipo de operación (0101 Venta interna, 0200 Exportación, 1001 Detracción, 2001 Percepción…)</td><td>R.S. 252-2019</td></tr>
+            <tr><td>53</td><td>Cargos / descuentos (00-07 ítem desc, 47-48 ítem cargo, 02-06 global desc, 49-50 global cargo, 51-53 percepción)</td><td>R.S. 244-2019 Anexo 8</td></tr>
+          </tbody>
+        </table>
+        <p>Los catálogos viven en <a href="data.json" target="_blank"><code>data.json</code></a>. Para actualizarlos (ej. si SUNAT publica nuevos códigos) basta editar ese archivo y recargar; no hace falta tocar el código JS.</p>
+        <p class="src">📎 <a href="https://www.sunat.gob.pe/legislacion/superin/2019/anexo-244-2019.pdf" target="_blank" rel="noopener">Anexo R.S. 244-2019</a> · <a href="https://www.sunat.gob.pe/legislacion/superin/2017/anexosV-318-2017.pdf" target="_blank" rel="noopener">Anexo V R.S. 318-2017</a></p>
+      </div>
+    </details>
+
+    <details class="norma-card">
+      <summary><b>10. Limitaciones conocidas de esta calculadora</b></summary>
+      <div class="norma-body">
+        <ul>
+          <li><b>Sin firma digital XMLDSig</b> — el XML generado debe pasar por un firmador externo (con certificado del emisor) antes de enviarse al SEE.</li>
+          <li><b>1 Cat.53 por ítem</b> — UBL permite múltiples; aquí limitamos por simplicidad de UI. Como alternativa, sumar todos los efectos en un solo monto o usar los globales.</li>
+          <li><b>Sin validación XSD</b> — no se valida contra el schema oficial UBL 2.1; un PSE/OSE rechazará XMLs malformados.</li>
+          <li><b>Sin guías de remisión</b> — solo facturas, boletas, notas de crédito y débito (Cat.01 códigos 01, 03, 07, 08).</li>
+          <li><b>Sin detracción</b> — el código de operación 1001 (sujeta a detracción) puede seleccionarse pero NO se calcula la detracción automática; debe declararse aparte.</li>
+          <li><b>Sin retención de IGV</b> — el régimen de retención (3%) no está implementado.</li>
+          <li><b>Tipo de cambio único</b> — al cambiar moneda no se aplica conversión automática; los valores numéricos se mantienen tal cual.</li>
+          <li><b>Sin emisión real</b> — esta calculadora no envía nada a SUNAT, solo simula el cálculo y genera el XML para revisión.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <!-- Acciones -->
+  <section>
+    <h2>💾 Acciones</h2>
+    <div class="row" style="margin-bottom:0">
+      <div class="col">
+        <button class="btn-primary" onclick="exportarJSON()" style="width:100%">⬇️ Exportar JSON</button>
+      </div>
+      <div class="col">
+        <button class="btn-primary" onclick="exportarXML()" style="width:100%">📄 Exportar XML UBL 2.1</button>
+      </div>
+      <div class="col">
+        <label for="importJSON" class="btn-primary" style="display:block;text-align:center;cursor:pointer">⬆️ Importar JSON</label>
+        <input type="file" id="importJSON" accept="application/json" style="display:none" onchange="importarJSON(event)">
+      </div>
+      <div class="col">
+        <button class="btn-secondary" onclick="resetTodo()" style="width:100%">🗑 Reset todo</button>
+      </div>
+    </div>
+    <p class="footnote" id="persistInfo">Auto-guardado en este navegador (localStorage).</p>
+  </section>
+</div>
+<div id="modalOverlay" class="modal-overlay" onclick="cerrarModal()">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="cerrarModal()">&times;</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>

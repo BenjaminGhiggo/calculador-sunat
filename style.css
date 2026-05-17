@@ -609,6 +609,215 @@ input.invalid:focus { box-shadow: 0 0 0 3px rgba(230,57,70,0.15); }
 .qr-text { font-size: 0.6rem; color: var(--c-subtle); }
 
 /* ═══════════════════════════════════════════════════════════════
+   PREVIEW — MÚLTIPLES CANALES
+   ═══════════════════════════════════════════════════════════════ */
+
+/* 2) Ticket POS térmico */
+.preview-ticket {
+  display: flex; justify-content: center;
+  padding: var(--sp-md);
+  background: repeating-linear-gradient(45deg, #e5e7eb, #e5e7eb 10px, #f3f4f6 10px, #f3f4f6 20px);
+  border-radius: var(--r-md);
+}
+.preview-ticket pre {
+  background: #fff;
+  font-family: 'Courier New', monospace;
+  font-size: 11px; line-height: 1.4;
+  white-space: pre;
+  padding: 1rem 0.8rem;
+  width: 280px;
+  box-shadow: var(--shadow-md);
+  border-radius: 2px;
+  color: #1a1a2e;
+}
+
+/* 3) Consumidor final retail */
+.preview-consumidor {
+  max-width: 360px; margin: 0 auto;
+  background: linear-gradient(135deg, #fef3c7, #fffbeb);
+  border: 2px dashed var(--c-warn);
+  border-radius: var(--r-lg);
+  padding: var(--sp-lg);
+  text-align: center;
+}
+.pc-header {
+  font-size: 1.1rem; font-weight: 700; color: var(--c-text);
+  margin-bottom: var(--sp-md);
+  padding-bottom: var(--sp-sm);
+  border-bottom: 1px solid #fcd34d;
+}
+.pc-items { text-align: left; margin-bottom: var(--sp-md); }
+.pc-row {
+  display: grid; grid-template-columns: 1fr auto auto;
+  gap: 0.5rem; padding: 0.3rem 0;
+  font-size: 0.85rem;
+  border-bottom: 1px dashed #fcd34d;
+}
+.pc-name  { font-weight: 500; }
+.pc-qty   { color: var(--c-muted); }
+.pc-price { font-weight: 600; }
+.pc-more  { font-size: 0.78rem; color: var(--c-muted); padding-top: 0.5rem; font-style: italic; }
+.pc-total {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding-top: var(--sp-md); margin-top: var(--sp-sm);
+  border-top: 2px solid var(--c-text);
+}
+.pc-total span:first-child { font-size: 0.85rem; font-weight: 700; }
+.pc-amount {
+  font-size: 2rem; font-weight: 900; color: var(--c-danger);
+  line-height: 1;
+}
+.pc-note { font-size: 0.72rem; color: var(--c-muted); margin-top: var(--sp-sm); }
+
+/* 4) Cotización B2B */
+.preview-b2b {
+  background: #fff; border: 1px solid var(--c-border);
+  border-radius: var(--r-md); padding: var(--sp-lg);
+  font-family: 'Times New Roman', serif;
+}
+.b2b-head {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  border-bottom: 3px double var(--c-text); padding-bottom: var(--sp-md);
+  margin-bottom: var(--sp-md);
+}
+.b2b-head h3 { font-size: 1.4rem; letter-spacing: 0.05em; }
+.b2b-head small { color: var(--c-muted); }
+.b2b-emisor { text-align: right; font-size: 0.85rem; line-height: 1.5; }
+.b2b-cliente {
+  font-size: 0.85rem; padding: 0.6rem 0;
+  border-bottom: 1px solid var(--c-border);
+  margin-bottom: var(--sp-md);
+}
+.b2b-table {
+  width: 100%; border-collapse: collapse; font-size: 0.85rem;
+  margin-bottom: var(--sp-md);
+}
+.b2b-table th {
+  background: #f3f4f6; padding: 0.5rem;
+  border-bottom: 2px solid var(--c-text);
+  text-align: left; font-weight: 700;
+}
+.b2b-table td { padding: 0.5rem; border-bottom: 1px solid var(--c-border); }
+.b2b-totales {
+  margin-left: auto; width: 320px;
+  font-size: 0.9rem;
+}
+.b2b-totales > div {
+  display: flex; justify-content: space-between;
+  padding: 0.25rem 0;
+}
+.b2b-total {
+  border-top: 2px solid var(--c-text);
+  font-weight: 900; font-size: 1.05rem;
+  padding-top: 0.4rem !important; margin-top: 0.3rem;
+}
+.b2b-footer {
+  font-size: 0.75rem; color: var(--c-muted); font-style: italic;
+  border-top: 1px solid var(--c-border);
+  padding-top: var(--sp-sm); margin-top: var(--sp-md);
+  text-align: center;
+}
+
+/* 5) Ecommerce / marketplace */
+.preview-ec {
+  display: grid; grid-template-columns: 280px 1fr;
+  gap: var(--sp-lg);
+  background: #fff; border: 1px solid var(--c-border);
+  border-radius: var(--r-lg); padding: var(--sp-lg);
+  font-family: 'Segoe UI', sans-serif;
+}
+.ec-galeria { background: #f5f6fa; border-radius: var(--r-md); display: flex; align-items: center; justify-content: center; min-height: 280px; }
+.ec-img { font-size: 6rem; opacity: 0.5; }
+.ec-status { font-size: 0.78rem; color: var(--c-muted); }
+.ec-title { font-size: 1.2rem; margin: 0.4rem 0 0.5rem; font-weight: 400; }
+.ec-rating { color: #fbbf24; font-size: 0.9rem; margin-bottom: 0.8rem; }
+.ec-rating-n { color: var(--c-muted); font-size: 0.78rem; }
+.ec-price {
+  display: flex; align-items: baseline; gap: 0.2rem;
+  margin-bottom: 0.4rem;
+}
+.ec-currency { font-size: 1.1rem; color: var(--c-text); }
+.ec-int      { font-size: 2.4rem; font-weight: 300; color: var(--c-text); line-height: 1; }
+.ec-dec      { font-size: 0.9rem; color: var(--c-text); vertical-align: super; }
+.ec-cuotas {
+  color: var(--c-success); font-size: 0.88rem; margin-bottom: 0.6rem;
+}
+.ec-envio { font-size: 0.85rem; color: var(--c-success); margin-bottom: 0.4rem; }
+.ec-stock { font-size: 0.82rem; color: var(--c-muted); margin-bottom: var(--sp-md); }
+.ec-buy, .ec-cart {
+  display: block; width: 100%; padding: 0.7rem;
+  border: none; border-radius: var(--r-md);
+  font-size: 0.95rem; font-weight: 600; cursor: pointer;
+  margin-bottom: 0.5rem; font-family: inherit;
+}
+.ec-buy  { background: var(--c-primary); color: #fff; }
+.ec-cart { background: var(--c-primary-bg); color: var(--c-primary); }
+.ec-detail { font-size: 0.78rem; color: var(--c-muted); margin-top: var(--sp-sm); }
+
+@media (max-width: 700px) {
+  .preview-ec { grid-template-columns: 1fr; }
+}
+
+/* 6) Email */
+.preview-email {
+  max-width: 600px; margin: 0 auto;
+  background: #fff; border: 1px solid var(--c-border);
+  border-radius: var(--r-md); overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+}
+.em-bar {
+  background: #f5f6fa; padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--c-border);
+  font-size: 0.78rem; color: var(--c-muted);
+  line-height: 1.6;
+}
+.em-bar b { color: var(--c-text); }
+.em-body { padding: var(--sp-lg); }
+.em-body h2 { font-size: 1.4rem; margin-bottom: var(--sp-md); }
+.em-body p  { margin: var(--sp-sm) 0; font-size: 0.92rem; }
+.em-cta {
+  display: inline-block;
+  background: var(--c-primary); color: #fff;
+  padding: 0.6rem 1.2rem; border-radius: var(--r-md);
+  text-decoration: none; font-weight: 600;
+  margin: 0.3rem 0.3rem 0 0;
+}
+.em-cta.secondary { background: var(--c-primary-bg); color: var(--c-primary); }
+
+/* 7) WhatsApp */
+.preview-wa {
+  max-width: 420px; margin: 0 auto;
+}
+.wa-bg {
+  background:
+    radial-gradient(circle at 25% 25%, #d9fdd3 1px, transparent 1px),
+    #e5ddd5;
+  background-size: 20px 20px;
+  padding: var(--sp-md);
+  border-radius: var(--r-md);
+  min-height: 200px;
+}
+.wa-bubble {
+  background: #dcf8c6;
+  padding: 0.5rem 0.7rem 0.3rem;
+  border-radius: 0.6rem;
+  position: relative;
+  max-width: 90%; margin-left: auto;
+  box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+}
+.wa-bubble pre {
+  font-family: -apple-system, "Helvetica Neue", sans-serif;
+  font-size: 0.85rem; line-height: 1.35;
+  white-space: pre-wrap; word-wrap: break-word;
+  margin: 0; color: #111;
+}
+.wa-meta {
+  text-align: right; font-size: 0.65rem; color: #667781;
+  margin-top: 0.2rem;
+}
+.wa-actions { text-align: center; margin-top: var(--sp-sm); }
+
+/* ═══════════════════════════════════════════════════════════════
    DRAWER (Justificación normativa)
    ═══════════════════════════════════════════════════════════════ */
 .drawer {

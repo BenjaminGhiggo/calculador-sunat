@@ -390,7 +390,28 @@
       </section>
 
       <section class="card">
-        <h2>Vista previa</h2>
+        <h2>
+          Vista previa
+          <small>cómo se vería en distintos canales</small>
+        </h2>
+        <div class="grid" style="margin-bottom:1rem">
+          <div class="field span-2">
+            <label for="canalPreview">
+              Previsualizar como
+              <span class="help" data-tip="Solo cambia el formato visual; los números y el XML no cambian.">?</span>
+            </label>
+            <select id="canalPreview">
+              <option value="sunat">📃 SUNAT oficial (Boleta/Factura electrónica)</option>
+              <option value="ticket">🧾 Ticket POS / bodega (impresora térmica 58mm)</option>
+              <option value="consumidor">🛒 Consumidor final retail (precio total)</option>
+              <option value="b2b">💼 Cotización B2B (neto + IGV)</option>
+              <option value="ecommerce">🌐 Ecommerce / marketplace (precio destacado + cuotas)</option>
+              <option value="email">✉️ Email a cliente</option>
+              <option value="whatsapp">💬 Mensaje WhatsApp</option>
+            </select>
+            <small class="hint" id="canalHint">SUNAT — exactamente lo que se imprime / se envía al PSE.</small>
+          </div>
+        </div>
         <div id="comprobantePreview"></div>
       </section>
 
@@ -564,6 +585,38 @@
 <!-- ═══════════════ TOASTS ═══════════════ -->
 <div id="toastContainer" class="toasts" aria-live="polite"></div>
 
-<script src="app.js"></script>
+<!-- ═══════════════════ Arquitectura DDD ═══════════════════ -->
+<!-- 1) Domain — lógica pura, sin DOM ni storage -->
+<script src="ddd/domain/catalogos.js"></script>
+<script src="ddd/domain/validaciones.js"></script>
+<script src="ddd/domain/autonumeracion.js"></script>
+<script src="ddd/domain/comprobante.js"></script>
+<script src="ddd/domain/calculo.js"></script>
+
+<!-- 2) Application — casos de uso + estado -->
+<script src="ddd/application/store.js"></script>
+<script src="ddd/application/undo.js"></script>
+
+<!-- 3) Infrastructure — adaptadores externos -->
+<script src="ddd/infrastructure/data-json-loader.js"></script>
+<script src="ddd/infrastructure/ubl-xml-generator.js"></script>
+
+<!-- 4) Application que consume infrastructure -->
+<script src="ddd/application/exportar.js"></script>
+<script src="ddd/application/importar.js"></script>
+
+<!-- 5) Presentation — DOM/UI -->
+<script src="ddd/presentation/ui-helpers.js"></script>
+<script src="ddd/presentation/validaciones-ui.js"></script>
+<script src="ddd/presentation/forms.js"></script>
+<script src="ddd/presentation/renders.js"></script>
+<script src="ddd/presentation/previews.js"></script>
+<script src="ddd/presentation/handlers.js"></script>
+
+<!-- 6) Application acciones (depende de presentation por toast/modal) -->
+<script src="ddd/application/acciones.js"></script>
+
+<!-- 7) Entry point -->
+<script src="ddd/main.js"></script>
 </body>
 </html>

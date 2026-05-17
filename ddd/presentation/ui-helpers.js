@@ -46,19 +46,19 @@ function setInvalid(inputId, errId, msg) {
   return true;
 }
 
-// ── Tooltips para summary headers ───────────────────────────────────
+// ── Tooltips para summary headers (con base normativa) ─────────────
 const TOOLTIPS = {
-  "Total Gravadas":  "Operaciones gravadas (Cat.07 10-17) tras globales que afectan BI.",
-  "Total Exoneradas":"Cat.07 código 20.",
-  "Total Inafectas": "Cat.07 códigos 30-36.",
-  "Total Export.":   "Cat.07 código 40.",
-  "Desc.Global":     "Descuentos globales (Cat.53 nivel Global).",
-  "Cargos Global":   "Cargos globales (Cat.53 nivel Global).",
-  "Total IGV":       "IGV sobre base gravada ajustada por globales.",
-  "ICBPER":          "Cat.05 7152, monto fijo por unidad.",
-  "Percepción":      "Cat.53 51/52/53, sobre Base + IGV.",
-  "Redondeo":        "PayableRoundingAmount (UBL).",
-  "Importe Total":   "Total a pagar = subtotal ± globales + IGV + ICBPER + percepción + redondeo.",
+  "Total Gravadas":   "Suma de bases imponibles de ítems con afectación Cat.07 códigos 10-17, ajustada por descuentos/cargos globales que afectan BI. TUO Ley IGV Art. 14 (D.S. 055-99-EF).",
+  "Total Exoneradas": "Suma de operaciones exoneradas (Cat.07 código 20). Apéndice I del TUO Ley IGV. No paga IGV pero se declara.",
+  "Total Inafectas":  "Operaciones inafectas (Cat.07 códigos 30-37). Apéndice II del TUO Ley IGV. No están en el ámbito del impuesto.",
+  "Total Export.":    "Operaciones de exportación (Cat.07 código 40). TUO Ley IGV Art. 33. Tasa 0% de IGV — saldo a favor del exportador.",
+  "Desc.Global":      "Descuentos globales (Cat.53 nivel Global, códigos 02/03/04/05/06). Anexo 8 R.S. 244-2019/SUNAT. Se registran en cac:AllowanceCharge raíz del documento.",
+  "Cargos Global":    "Cargos globales (Cat.53 nivel Global, códigos 45/46/49/50). FISE (Ley 29852), recargo al consumo (D.L. 25988), cargos sobre BI.",
+  "Total IGV":        "IGV calculado sobre base gravada ajustada × tasa. Tasa = 18% general (D.S. 055-99-EF Art. 17) o 10.5% MYPE turismo (Ley 32219 + 32387).",
+  "ICBPER":           "Impuesto al Consumo de Bolsas Plásticas (Cat.05 código 7152). Ley 30884: monto fijo S/0.50 por bolsa desde 2023. Se registra como tributo OTH.",
+  "Percepción":       "Régimen de percepciones (Cat.53 códigos 51/52/53). Ley 29173: 2% venta interna / 1% combustible / 0.5% tasa especial. Base: Precio de Venta (Base + IGV).",
+  "Redondeo":         "Diferencia opcional aplicada al PayableAmount para ajustar al céntimo. UBL: cbc:PayableRoundingAmount. R.S. 025-2000/SUNAT (redondeo a 2 decimales).",
+  "Importe Total":    "Total a pagar = Subtotal ± Globales + IGV + ICBPER + Percepción + Redondeo. UBL: cbc:PayableAmount. Anexo I R.S. 117-2017/SUNAT.",
 };
 function tip(key) {
   const t = TOOLTIPS[key] || "";

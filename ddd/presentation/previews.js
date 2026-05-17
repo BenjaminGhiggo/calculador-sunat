@@ -46,8 +46,8 @@ function previewSunat(c) {
       <td style="text-align:center">${i+1}</td><td style="text-align:center">${escapeHtml(p.codigo)}</td>
       <td style="text-align:center">${p.cantidad.toFixed(2)}</td><td style="text-align:center">${escapeHtml(p.unidad)}</td>
       <td>${escapeHtml(p.producto.length > 28 ? p.producto.slice(0,28)+"…" : p.producto)}</td>
-      <td style="text-align:right">${p.precioUnit.toFixed(2)}</td><td style="text-align:right">${r.valorUnitario.toFixed(2)}</td>
-      <td style="text-align:right">${r.precioVentaUnitario.toFixed(2)}</td>
+      <td style="text-align:right">${r.valorUnitario.toFixed(2)}</td>
+      <td style="text-align:right">${r.igvAplica ? r.precioVentaUnitario.toFixed(2) : "—"}</td>
       <td style="text-align:right">${(r.descItem + r.cargoItem).toFixed(2)}</td>
       <td style="text-align:right">${r.baseImp.toFixed(2)}</td>
       <td style="text-align:right">${r.igvAplica ? r.igv.toFixed(2) : "0.00"}</td>
@@ -73,8 +73,10 @@ function previewSunat(c) {
       <table class="inv-table">
         <thead><tr>
           <th style="width:28px">#</th><th style="width:45px">Cód.</th><th style="width:45px">Cant.</th>
-          <th style="width:35px">Und</th><th>Descripción</th><th style="width:55px">P.U</th>
-          <th style="width:60px">V.Unit</th><th style="width:60px">P.Vta</th><th style="width:55px">D/C</th>
+          <th style="width:35px">Und</th><th>Descripción</th>
+          <th style="width:60px">V.U.<br/><small>sin IGV</small></th>
+          <th style="width:60px">P.U.<br/><small>con IGV</small></th>
+          <th style="width:55px">D/C</th>
           <th style="width:60px">V.Venta</th><th style="width:55px">IGV</th><th style="width:65px">Total</th>
         </tr></thead>
         <tbody>${lines}</tbody>

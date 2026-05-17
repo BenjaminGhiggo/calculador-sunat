@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calculadora SUNAT 2026</title>
+<title>Calculadora SUNAT 2026 · Tu Quipu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,10 +15,10 @@
 <!-- ═══════════════ HEADER STICKY ═══════════════ -->
 <header class="topbar">
   <div class="brand">
-    <span class="logo">🧮</span>
+    <span class="brand-mark" aria-hidden="true"></span>
     <div>
       <div class="brand-title">Calculadora SUNAT</div>
-      <div class="brand-sub">Comprobante electrónico · 2026</div>
+      <div class="brand-sub">Comprobante electrónico · 2026 · Tu Quipu</div>
     </div>
   </div>
   <nav class="stepper" id="stepper" aria-label="Pasos">
@@ -65,7 +69,7 @@
             <label for="tipoComprobante">
               <span class="simple-only">¿Qué tipo emites?</span>
               <span class="exp-only">Tipo (Cat.01)</span>
-              <span class="help" data-tip="Boleta para cliente con DNI · Factura para cliente con RUC · Nota de crédito/débito ajusta un comprobante previo.">?</span>
+              <span class="help" data-tip="Catálogo SUNAT N° 01: 01 Factura (cliente con RUC, da crédito fiscal), 03 Boleta (consumidor final con DNI), 07 Nota de Crédito y 08 Nota de Débito ajustan un CPE previo. R.S. 007-99/SUNAT Art. 2 y 4.">?</span>
             </label>
             <select id="tipoComprobante">
               <option value="03">📃 Boleta de venta</option>
@@ -75,7 +79,10 @@
             </select>
           </div>
           <div class="field">
-            <label for="serie">Serie</label>
+            <label for="serie">
+              Serie
+              <span class="help" data-tip="4 caracteres alfanuméricos. F### para Factura/NC/ND, B### para Boleta. R.S. 117-2017/SUNAT Anexo I.">?</span>
+            </label>
             <input type="text" id="serie" maxlength="4" placeholder="B001" autocomplete="off">
             <small class="hint" id="serieHint"></small>
             <small class="err" id="serieErr" hidden></small>
@@ -83,18 +90,24 @@
           <div class="field">
             <label for="correlativo">
               Correlativo
-              <span class="help" data-tip="Se autoincrementa al exportar. Una vez consumido, no se reutiliza.">?</span>
+              <span class="help" data-tip="Número secuencial único por serie, hasta 8 dígitos, inicia en 1. No se puede reusar ni saltar. R.S. 007-99/SUNAT Art. 8 + R.S. 117-2017/SUNAT Anexo I.">?</span>
             </label>
             <input type="number" id="correlativo" min="1">
             <small class="hint" id="correlativoInfo"></small>
           </div>
           <div class="field">
-            <label for="fechaEmision">Fecha de emisión</label>
+            <label for="fechaEmision">
+              Fecha de emisión
+              <span class="help" data-tip="Cuando se entrega el bien o se cobra, lo primero que ocurra. R.S. 007-99/SUNAT Art. 5. Plazo de envío al PSE/OSE: 3 días calendario (R.S. 003-2023/SUNAT).">?</span>
+            </label>
             <input type="date" id="fechaEmision">
             <small class="err" id="fechaErr" hidden></small>
           </div>
           <div class="field">
-            <label for="moneda">Moneda</label>
+            <label for="moneda">
+              Moneda
+              <span class="help" data-tip="Código ISO 4217 (Cat.02 SUNAT). USD/EUR requieren tipo de cambio venta SBS del día de la operación. Reglamento IGV (D.S. 029-94-EF) Art. 5.">?</span>
+            </label>
             <select id="moneda">
               <option value="PEN">S/  Soles</option>
               <option value="USD">$  Dólares</option>
@@ -104,7 +117,7 @@
           <div class="field exp-only">
             <label for="tipoOperacion">
               Tipo de operación (Cat.51)
-              <span class="help" data-tip="0101 venta interna es lo más común.">?</span>
+              <span class="help" data-tip="Catálogo SUNAT N° 51 (sustituido por R.S. 252-2019/SUNAT): 0101 venta interna · 0112 gasto deducible PN · 0200 exportación bienes · 1001 sujeta a detracción · 2001 sujeta a percepción. Va en listID del cbc:InvoiceTypeCode.">?</span>
             </label>
             <select id="tipoOperacion">
               <option value="0101">0101 — Venta interna</option>
@@ -120,6 +133,7 @@
             <label for="regimenIgv">
               <span class="simple-only">Régimen IGV</span>
               <span class="exp-only">Régimen IGV (override CAT05[1000])</span>
+              <span class="help" data-tip="General: 18% (IGV 16% + IPM 2%). TUO Ley IGV D.S. 055-99-EF Art. 17. MYPE turismo: 10.5% para restaurantes/hoteles ≥70% ingresos y ventas ≤1700 UIT, vigente hasta 31-dic-2026. Leyes 31556, 32219 y 32387.">?</span>
             </label>
             <select id="regimenIgv">
               <option value="18">General — 18%</option>
@@ -136,17 +150,23 @@
           <div class="field">
             <label for="emisorRuc">
               RUC
-              <span class="help" data-tip="11 dígitos numéricos. Empieza con 10/15/17 (PN) o 20 (jurídica).">?</span>
+              <span class="help" data-tip="Número único de 11 dígitos asignado por SUNAT. Inicia con 10/15/17 (persona natural) o 20 (jurídica). D. Leg. 943 — Ley del RUC, Reglamento R.S. 210-2004/SUNAT.">?</span>
             </label>
             <input type="text" id="emisorRuc" maxlength="11" inputmode="numeric" autocomplete="off">
             <small class="err" id="emisorRucErr" hidden></small>
           </div>
           <div class="field span-2">
-            <label for="emisorRazon">Razón social</label>
+            <label for="emisorRazon">
+              Razón social
+              <span class="help" data-tip="Denominación inscrita en RUC y SUNARP. Debe coincidir exactamente. Ley General de Sociedades 26887 Art. 9.">?</span>
+            </label>
             <input type="text" id="emisorRazon" autocomplete="organization">
           </div>
           <div class="field span-3">
-            <label for="emisorDireccion">Dirección fiscal</label>
+            <label for="emisorDireccion">
+              Dirección fiscal
+              <span class="help" data-tip="Domicilio fiscal declarado en RUC. Se usa para notificaciones SUNAT y debe mantenerse actualizado. Código Tributario Art. 11.">?</span>
+            </label>
             <input type="text" id="emisorDireccion" autocomplete="street-address">
           </div>
         </div>
@@ -156,7 +176,10 @@
         <h2>Receptor <small>cliente</small></h2>
         <div class="grid">
           <div class="field">
-            <label for="receptorTipoDoc">Documento</label>
+            <label for="receptorTipoDoc">
+              Documento
+              <span class="help" data-tip="Catálogo 06 (Anexo 8 SUNAT): 0 sin doc, 1 DNI, 4 C.Extranjería, 6 RUC, 7 Pasaporte. Factura exige RUC; Boleta exige DNI/RUC si total > S/700.">?</span>
+            </label>
             <select id="receptorTipoDoc">
               <option value="1">🪪 DNI</option>
               <option value="6">🏢 RUC</option>
@@ -166,16 +189,25 @@
             </select>
           </div>
           <div class="field">
-            <label for="receptorDoc">Número</label>
+            <label for="receptorDoc">
+              Número
+              <span class="help" data-tip="RUC en factura (obligatorio, 11 dígitos). DNI/RUC en boleta solo si total > S/700. R.S. 007-99/SUNAT Art. 8 (1.1 y 3.7).">?</span>
+            </label>
             <input type="text" id="receptorDoc" inputmode="numeric" autocomplete="off">
             <small class="err" id="receptorDocErr" hidden></small>
           </div>
           <div class="field span-2">
-            <label for="receptorRazon">Nombre / Razón social</label>
+            <label for="receptorRazon">
+              Nombre / Razón social
+              <span class="help" data-tip="Obligatoria en factura (R.S. 007-99 Art. 8.1.5). En boleta solo si total > S/700 (Art. 8.3.7).">?</span>
+            </label>
             <input type="text" id="receptorRazon">
           </div>
           <div class="field span-3">
-            <label for="receptorDireccion">Dirección</label>
+            <label for="receptorDireccion">
+              Dirección
+              <span class="help" data-tip="Obligatoria solo en factura (R.S. 007-99 Art. 8.1.5). No exigida en boleta.">?</span>
+            </label>
             <input type="text" id="receptorDireccion">
           </div>
         </div>
@@ -201,12 +233,15 @@
           <div class="field">
             <label for="codigoProducto">
               Código
-              <span class="help" data-tip="Se autoincrementa al agregar (001 → 002…). Puedes editarlo.">?</span>
+              <span class="help" data-tip="Código del producto, propio del emisor o estándar UNSPSC (Catálogo SUNAT N° 25, 8 dígitos). Autoincremental (001 → 002…). UBL: cac:SellersItemIdentification. R.S. 340-2017/SUNAT.">?</span>
             </label>
             <input type="text" id="codigoProducto" autocomplete="off">
           </div>
           <div class="field span-2">
-            <label for="producto">Producto / servicio</label>
+            <label for="producto">
+              Producto / servicio
+              <span class="help" data-tip="Descripción del bien o servicio. Requisito mínimo del comprobante. R.S. 007-99/SUNAT Art. 8 num. 1.7 (factura) y 3.5 (boleta). UBL: cbc:Description.">?</span>
+            </label>
             <select id="producto"></select>
           </div>
           <div class="field span-3" id="productoCustomField" hidden>
@@ -214,7 +249,10 @@
             <input type="text" id="productoCustom" placeholder="Nombre del producto">
           </div>
           <div class="field">
-            <label for="cantidad">Cantidad</label>
+            <label for="cantidad">
+              Cantidad
+              <span class="help" data-tip="Decimal positivo, hasta 12 enteros y 10 decimales. Formato UBL n(12,10) según R.S. 117-2017/SUNAT Anexo I, campo cbc:InvoicedQuantity.">?</span>
+            </label>
             <input type="number" id="cantidad" value="1" min="0.0001" step="0.0001">
             <small class="err" id="cantidadErr" hidden></small>
           </div>
@@ -222,6 +260,7 @@
             <label for="unidad">
               <span class="simple-only">Unidad</span>
               <span class="exp-only">Unidad (Cat.03)</span>
+              <span class="help" data-tip="Catálogo SUNAT N° 03 basado en UN/ECE Rec. 20: NIU (unidad), KGM (kilogramo), MTR (metro), LTR (litro), ZZ (servicio). R.S. 244-2019/SUNAT.">?</span>
             </label>
             <select id="unidad"></select>
           </div>
@@ -229,33 +268,46 @@
             <label for="afectacion">
               <span class="simple-only">¿Lleva IGV?</span>
               <span class="exp-only">Afectación IGV (Cat.07)</span>
-              <span class="help" data-tip="Gravado: paga IGV · Exonerado/Inafecto: no paga · Exportación: tasa 0%.">?</span>
+              <span class="help" data-tip="Catálogo SUNAT N° 07 (R.S. 244-2019): 10 gravado oneroso · 11-17 gravado gratuito (retiro) · 20 exonerado (Apéndice I Ley IGV) · 30-37 inafecto (Apéndice II) · 40 exportación (Art. 33 Ley IGV).">?</span>
             </label>
             <select id="afectacion"></select>
           </div>
         </div>
 
         <div class="sub-card">
-          <h3>Precio</h3>
+          <h3>
+            Precio
+            <small>elige si ingresas valor unitario (sin IGV) o precio unitario (con IGV)</small>
+          </h3>
           <div class="grid">
             <div class="field">
-              <label for="precioUnit">Precio unitario</label>
-              <input type="number" id="precioUnit" value="100" min="0" step="0.01">
-              <small class="err" id="precioErr" hidden></small>
-            </div>
-            <div class="field">
-              <label for="tipoPrecio">El precio…</label>
+              <label for="tipoPrecio">
+                ¿Qué precio vas a ingresar?
+                <span class="help" data-tip="Valor unitario (sin IGV) = base imponible por unidad — TUO Ley IGV (D.S. 055-99-EF) Art. 14. Precio unitario (con IGV) = V.U. × (1 + tasa) — R.S. 007-99/SUNAT Art. 8. SUNAT exige separar valor de venta del IGV en el comprobante. Ambos van al XML UBL.">?</span>
+              </label>
               <select id="tipoPrecio">
-                <option value="incluido">incluye IGV</option>
-                <option value="sin_igv">no incluye IGV</option>
+                <option value="sin_igv">Valor unitario — sin IGV</option>
+                <option value="incluido">Precio unitario — con IGV</option>
               </select>
             </div>
+            <div class="field">
+              <label for="precioUnit" id="precioUnitLabel">Valor unitario (sin IGV)</label>
+              <input type="number" id="precioUnit" value="100" min="0" step="0.01">
+              <small class="hint" id="precioConvHint"></small>
+              <small class="err" id="precioErr" hidden></small>
+            </div>
             <div class="field exp-only">
-              <label for="tributo">Tributo (Cat.05)</label>
+              <label for="tributo">
+                Tributo (Cat.05)
+                <span class="help" data-tip="Catálogo SUNAT N° 05: 1000 IGV (18% o 10.5%), 1016 IVAP (4%), 2000 ISC, 7152 ICBPER (S/0.50/bolsa), 9997 Exonerado, 9998 Inafecto. R.S. 244-2019/SUNAT.">?</span>
+              </label>
               <select id="tributo"></select>
             </div>
             <div class="field" id="tasaRow">
-              <label for="tasaInput" id="tasaLabel">Tasa (%)</label>
+              <label for="tasaInput" id="tasaLabel">
+                Tasa (%)
+                <span class="help" data-tip="Tasa aplicable al tributo elegido. IGV: 18% (D.S. 055-99-EF Art. 17) o 10.5% MYPE turismo. IVAP: 4% fijo (Ley 28211). ICBPER: monto S/0.50 por bolsa (Ley 30884), no porcentaje.">?</span>
+              </label>
               <input type="number" id="tasaInput" value="18" min="0" max="100" step="0.01">
             </div>
           </div>
@@ -272,18 +324,25 @@
               <label for="codigo53">
                 <span class="simple-only">Concepto</span>
                 <span class="exp-only">Código Cat.53 (nivel Ítem)</span>
+                <span class="help" data-tip="Catálogo SUNAT N° 53 nivel Ítem: 00 desc afecta BI · 01 desc no afecta · 07 factor compensación DU 010-2004 · 47 cargo afecta BI · 48 cargo no afecta · 54 factor aportación. Códigos que afectan BI recalculan el IGV. R.S. 244-2019/SUNAT.">?</span>
               </label>
               <select id="codigo53"></select>
             </div>
             <div class="field">
-              <label for="modoOp">Modo</label>
+              <label for="modoOp">
+                Modo
+                <span class="help" data-tip="Porcentaje: aplica % sobre la base. UBL lo registra en cbc:MultiplierFactorNumeric. Monto fijo: monto absoluto en S/. La factura debe siempre llevar el monto absoluto en cbc:Amount.">?</span>
+              </label>
               <select id="modoOp">
                 <option value="porcentaje">Porcentaje (%)</option>
                 <option value="monto">Monto fijo</option>
               </select>
             </div>
             <div class="field">
-              <label id="labelOp" for="valorOp">Valor</label>
+              <label id="labelOp" for="valorOp">
+                Valor
+                <span class="help" data-tip="Si afecta BI (ab=true en Cat.53), reduce/aumenta la base imponible y se recalcula el IGV. Si no afecta BI, solo ajusta el total final. Reglamento IGV (D.S. 029-94-EF) Art. 5 num. 13.">?</span>
+              </label>
               <input type="number" id="valorOp" value="0" min="0" step="0.5">
             </div>
             <div class="field">
@@ -332,18 +391,25 @@
             <label for="codigo53Global">
               <span class="simple-only">Concepto</span>
               <span class="exp-only">Código Cat.53 (nivel Global)</span>
+              <span class="help" data-tip="Catálogo 53 nivel Global: 02/03 desc, 04/05/06 desc por anticipos, 45 FISE (Ley 29852), 46 recargo consumo (D.L. 25988), 49/50 cargos, 51 percepción 2% (Ley 29173), 52 percepción combustible 1%, 53 percepción tasa especial 0.5%, 61 retención de renta.">?</span>
             </label>
             <select id="codigo53Global"></select>
           </div>
           <div class="field">
-            <label for="modoOpGlobal">Modo</label>
+            <label for="modoOpGlobal">
+              Modo
+              <span class="help" data-tip="Porcentaje: % sobre base o base+IGV según el código (percepciones aplican sobre Precio Venta = Base + IGV). Monto fijo: importe absoluto. Ley 29173 Art. 5 para percepciones.">?</span>
+            </label>
             <select id="modoOpGlobal">
               <option value="porcentaje">Porcentaje (%)</option>
               <option value="monto">Monto fijo</option>
             </select>
           </div>
           <div class="field">
-            <label id="labelOpGlobal" for="valorOpGlobal">Valor</label>
+            <label id="labelOpGlobal" for="valorOpGlobal">
+              Valor
+              <span class="help" data-tip="Percepciones: tasa fija predefinida por el código (51=2%, 52=1%, 53=0.5%). Descuentos/cargos libres: editable. No aplica percepción a consumidor final con total ≤ S/1,500 (D.S. 091-2013-EF).">?</span>
+            </label>
             <input type="number" id="valorOpGlobal" value="0" min="0" step="0.5">
           </div>
           <div class="field">
@@ -498,6 +564,32 @@
         <p>Tasa 18% (15.5% IGV + 2.5% IPM en 2026, redistribuido por <b>Ley 32387</b>). El comprobante reporta 18% total.</p>
         <p>MYPE turismo: <b>10.5%</b> hasta 31-dic-2026 (ingresos &lt; 1700 UIT, ≥70% en restaurantes/hoteles/alojamientos).</p>
         <p class="src">📎 <a href="https://emprender.sunat.gob.pe/principales-impuestos/impuesto-general-las-ventas-igv/impuesto-general-las-ventas" target="_blank" rel="noopener">SUNAT — IGV</a></p>
+      </div>
+    </details>
+
+    <details class="norma-card">
+      <summary><b>2.b Valor Unitario ≠ Precio Unitario — relación fija</b></summary>
+      <div class="norma-body">
+        <p><b>Regla normativa:</b> cuando una operación está gravada con IGV, el <b>Valor Unitario</b> (V.U.) y el <b>Precio Unitario</b> (P.U.) <u>nunca son iguales</u>. La relación es fija:</p>
+        <p style="text-align:center;font-family:var(--tq-font-mono);background:var(--tq-surface-low);padding:0.7rem;border-radius:8px;font-size:1.05em">
+          <b>P.U. = V.U. × (1 + tasa)</b><br>
+          ej. P.U. = V.U. × 1.18
+        </p>
+        <p>Decir que V.U. = P.U. implicaría tasa 0% — válido solo para operaciones exoneradas/inafectas/exportación (Cat.07 códigos 20, 30-36, 40).</p>
+        <p><b>Definiciones SUNAT:</b></p>
+        <ul>
+          <li><b>Valor Unitario (V.U.)</b> = base imponible por unidad, sin IGV. Es la base sobre la que se calcula el impuesto.</li>
+          <li><b>Precio Unitario (P.U.)</b> = valor final por unidad, incluyendo el IGV. Es lo que paga el cliente.</li>
+          <li><b>Valor Venta (V.V.)</b> = V.U. × cantidad. Base imponible total del ítem antes de descuentos.</li>
+        </ul>
+        <p><b>Base normativa:</b></p>
+        <ul>
+          <li><b>D.S. N° 055-99-EF</b> (TUO Ley del IGV) — define "valor de venta" como base imponible y la tasa del 18% (16% IGV + 2% IPM, redistribuida por Ley 32387 en 2026).</li>
+          <li><b>Reglamento de Comprobantes de Pago</b> — exige que la factura consigne separadamente el <i>valor de venta unitario</i> (sin tributos) y el <i>precio unitario</i> (con tributos).</li>
+          <li><b>R.S. N° 025-2000/SUNAT</b> — procedimiento de redondeo al generar comprobantes (mantener cálculos raw, redondear solo el resultado final a 2 decimales).</li>
+        </ul>
+        <p><b>Cómo lo refleja esta calculadora:</b> en la tabla "Detalle de ítems" las columnas <code>V.U. (sin IGV)</code> y <code>P.U. (con IGV)</code> son independientes y obedecen a la fórmula. El XML UBL los reporta en <code>cbc:PriceAmount</code> (V.U., raíz) y <code>cac:AlternativeConditionPrice/cbc:PriceAmount</code> con <code>PriceTypeCode=01</code> (P.U.).</p>
+        <p class="src">📎 <a href="https://www.sunat.gob.pe/legislacion/igv/ley/" target="_blank" rel="noopener">TUO Ley del IGV</a> · <a href="https://www.sunat.gob.pe/legislacion/comprob/regla/" target="_blank" rel="noopener">Reglamento Comprobantes de Pago</a> · <a href="https://www.sunat.gob.pe/legislacion/superin/2000/025.htm" target="_blank" rel="noopener">R.S. 025-2000/SUNAT</a></p>
       </div>
     </details>
 

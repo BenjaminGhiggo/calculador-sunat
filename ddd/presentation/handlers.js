@@ -5,6 +5,7 @@
 
 function onCambioItemForm() {
   renderTasaUI();
+  renderPrecioUI();
   renderCat53UI();
   validarCantidad();
   validarPrecio();
@@ -21,6 +22,7 @@ function onCambioComprobante() {
   renderSerieHint();
   renderCorrelativoInfo();
   renderRegimenInfo();
+  renderPrecioUI();          // moneda/régimen MYPE cambian el hint
   validarSerie();
   validarFecha();
   validarEmisor();

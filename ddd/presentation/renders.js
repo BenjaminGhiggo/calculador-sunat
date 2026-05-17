@@ -53,6 +53,58 @@ function renderCorrelativoInfo() {
   }
 }
 
+// ── UI del precio: relabel del input + hint con conversión equivalente ──
+// Si el usuario eligió "Valor unitario (sin IGV)", muestra como hint el
+// precio unitario equivalente (con IGV). Y viceversa. Cero efecto sobre cálculo.
+function renderPrecioUI() {
+  const tipo    = $("tipoPrecio").value;
+  const precio  = parseFloat($("precioUnit").value) || 0;
+  const afecKey = $("afectacion").value;
+  const tribKey = $("tributo").value;
+  const trib    = CAT05[tribKey];
+  const igvAplica = esIgvAplicable(afecKey);
+
+  // Tasa efectiva (respeta override de régimen MYPE)
+  const regimen = (store.comprobante && store.comprobante.regimenIgv) || 18;
+  let tasa = trib.t;
+  if (tribKey === "1000") tasa = regimen / 100;
+  if (tasa === null && trib.modo === "pct" && igvAplica) tasa = (parseFloat($("tasaInput").value) || 0) / 100;
+  if (!igvAplica || trib.modo === "unit") tasa = 0;
+
+  const label = $("precioUnitLabel");
+  const hint  = $("precioConvHint");
+  if (!label || !hint) return;
+
+  const sim = simboloMoneda(store.comprobante.moneda);
+  if (tipo === "incluido") {
+    label.textContent = `Precio unitario — con IGV (${sim})`;
+    if (igvAplica && precio > 0 && tasa > 0) {
+      const valor = precio / (1 + tasa);
+      const baseIgv = precio - valor;
+      hint.innerHTML = `Equivale a <b>valor unitario ${fmtMon(valor)}</b> + IGV ${fmtMon(baseIgv)} · base = precio ÷ (1 + ${(tasa*100).toFixed(2)}%)`;
+      hint.hidden = false;
+    } else if (!igvAplica && precio > 0) {
+      hint.textContent = `Operación no gravada — valor unitario = precio unitario = ${fmtMon(precio)}`;
+      hint.hidden = false;
+    } else {
+      hint.hidden = true;
+    }
+  } else {
+    label.textContent = `Valor unitario — sin IGV (${sim})`;
+    if (igvAplica && precio > 0 && tasa > 0) {
+      const precioConIgv = precio * (1 + tasa);
+      const baseIgv = precioConIgv - precio;
+      hint.innerHTML = `Equivale a <b>precio unitario ${fmtMon(precioConIgv)}</b> (+ IGV ${fmtMon(baseIgv)}) · precio = valor × (1 + ${(tasa*100).toFixed(2)}%)`;
+      hint.hidden = false;
+    } else if (!igvAplica && precio > 0) {
+      hint.textContent = `Operación no gravada — valor unitario = precio unitario = ${fmtMon(precio)}`;
+      hint.hidden = false;
+    } else {
+      hint.hidden = true;
+    }
+  }
+}
+
 // ── UI dependiente del tributo (mostrar/ocultar tasa) ───────────────
 function renderTasaUI() {
   const tribKey = $("tributo").value;
@@ -200,20 +252,43 @@ function renderComprobante() {
     return;
   }
   const c = calcComprobante({ items, globales: store.globales });
-  const headers = ['#','Cód.','Cant.','Und','Descripción','P.Unit','Val.Unit.','P.Venta','Val.Venta','Desc/Cargo','Base Imp.','IGV','Total'];
+  // Columnas alineadas a la norma SUNAT:
+  //   V.U. = Valor unitario (sin IGV) — Ley del IGV D.S. 055-99-EF art. 14
+  //   P.U. = Precio unitario (con IGV) — Reglamento de Comprobantes de Pago. P.U. = V.U. × (1 + tasa)
+  //   V.V. = Valor Venta = V.U. × cantidad (base imponible antes de descuentos)
+  //   BI   = Base Imponible final (V.V. tras descuentos que afectan BI)
+  const headers = [
+    { k: '#',           t: '' },
+    { k: 'Cód.',        t: 'Código del producto — propio del emisor o estándar UNSPSC (Cat.25 SUNAT, 8 dígitos). R.S. 340-2017/SUNAT.' },
+    { k: 'Cant.',       t: 'Cantidad por línea. Formato UBL n(12,10): hasta 12 enteros y 10 decimales. R.S. 117-2017/SUNAT Anexo I, campo cbc:InvoicedQuantity.' },
+    { k: 'Und',         t: 'Unidad de medida — Catálogo SUNAT N° 03 basado en UN/ECE Rec. 20. NIU (unidad), KGM, MTR, LTR, ZZ (servicio).' },
+    { k: 'Descripción', t: 'Descripción del bien o servicio. Requisito mínimo de la factura/boleta. R.S. 007-99/SUNAT Art. 8 num. 1.7 y 3.5. UBL: cbc:Description.' },
+    { k: 'V.U. (sin IGV)', t: 'Valor Unitario — base imponible por unidad, sin IGV. TUO Ley IGV (D.S. 055-99-EF) Art. 14. UBL: cbc:PriceAmount (raíz). Formato n(12,10), hasta 10 decimales.' },
+    { k: 'P.U. (con IGV)', t: 'Precio Unitario — incluye IGV. P.U. = V.U. × (1 + tasa). Reglamento de Comprobantes de Pago (R.S. 007-99) Art. 8. UBL: cac:AlternativeConditionPrice con PriceTypeCode=01.' },
+    { k: 'V.V.',        t: 'Valor Venta del ítem = V.U. × Cantidad. Es la base imponible antes de descuentos. TUO Ley IGV Art. 14.' },
+    { k: 'Desc/Cargo',  t: 'Descuentos o cargos por ítem (Cat.53 nivel Ítem, códigos 00/01/07/47/48/54). Reducen o aumentan la base si "afectan BI". Anexo 8 R.S. 244-2019.' },
+    { k: 'BI',          t: 'Base Imponible final = V.V. ∓ descuentos/cargos que afectan BI. Sobre esta cantidad se calcula el IGV. Reglamento IGV (D.S. 029-94-EF) Art. 5.13.' },
+    { k: 'IGV',         t: 'IGV = BI × tasa. Tasa: 18% general (D.S. 055-99-EF Art. 17) o 10.5% MYPE turismo (Leyes 32219 y 32387, vigente hasta 31-dic-2026).' },
+    { k: 'Total',       t: 'Total ítem = BI + IGV ± cargos/descuentos que no afectan BI + ICBPER si aplica. Suma de la línea reportada en cbc:LineExtensionAmount.' },
+  ];
   const rows = c.itemsRes.map((r, i) => {
     const p = r.item;
     return `<tr>
       <td>${i+1}</td><td>${escapeHtml(p.codigo)}</td>
       <td>${p.cantidad.toFixed(2)}</td><td>${escapeHtml(p.unidad)}</td>
       <td>${escapeHtml(p.producto.length > 18 ? p.producto.slice(0,18)+"…" : p.producto)}</td>
-      <td>${fmtMon(p.precioUnit)}</td><td>${fmtMon(r.valorUnitario)}</td><td>${fmtMon(r.precioVentaUnitario)}</td>
+      <td>${fmtMon(r.valorUnitario)}</td>
+      <td>${r.igvAplica ? fmtMon(r.precioVentaUnitario) : "—"}</td>
       <td>${fmtMon(r.baseImp)}</td>
       <td>${(r.descItem + r.cargoItem) > 0 ? fmtMon(r.descItem + r.cargoItem) : "-"}</td>
-      <td>${fmtMon(r.biFinal)}</td><td>${r.igvAplica ? fmtMon(r.igv) : "Ex."}</td><td>${fmtMon(r.total)}</td>
+      <td>${fmtMon(r.biFinal)}</td>
+      <td>${r.igvAplica ? fmtMon(r.igv) : "Ex."}</td>
+      <td>${fmtMon(r.total)}</td>
     </tr>`;
   }).join("");
-  $("excelHead").innerHTML = "<tr>" + headers.map(h => `<th>${h}</th>`).join("") + "</tr>";
+  $("excelHead").innerHTML = "<tr>" + headers.map(h =>
+    `<th><span class="th-wrap">${h.k}${h.t ? `<span class="tip-i" data-tip="${escapeHtml(h.t)}">i</span>` : ""}</span></th>`
+  ).join("") + "</tr>";
   $("excelBody").innerHTML = rows;
 
   const sumCols = [
@@ -264,6 +339,7 @@ function renderAll() {
   renderCorrelativoInfo();
   renderAvisoReceptor();
   renderTasaUI();
+  renderPrecioUI();
   renderCat53UI();
   renderCat53GlobalUI();
   renderItemCargosList();

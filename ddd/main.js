@@ -83,6 +83,19 @@ function bindEvents() {
     $("canalPreview").addEventListener("change", () => renderComprobante());
   }
 
+  // ── Sticky summary colapsable en mobile (tap en el h3) ─────────────
+  const sticky = $("summarySticky");
+  if (sticky) {
+    const h3 = sticky.querySelector("h3");
+    if (h3) {
+      // Arrancar colapsado en mobile para no tapar contenido inicial
+      if (window.matchMedia("(max-width: 1024px)").matches) {
+        sticky.classList.add("is-collapsed");
+      }
+      h3.addEventListener("click", () => sticky.classList.toggle("is-collapsed"));
+    }
+  }
+
   // ── Atajos de teclado ──────────────────────────────────────────────
   document.addEventListener("keydown", e => {
     if (e.key === "Escape") { closeModal(); closeDrawer(); }
@@ -166,6 +179,9 @@ async function init() {
 
   // 8) Bind events
   bindEvents();
+
+  // 8.1) Tooltip Manager (Bento Grid Premium)
+  if (typeof initTooltipManager === "function") initTooltipManager();
 
   // 9) Render inicial
   renderAll();

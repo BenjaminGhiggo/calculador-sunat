@@ -330,6 +330,19 @@ function renderSummarySticky(c) {
   $("qsTotal").textContent    = fmtMon(c.importeTotal);
   const cb = store.comprobante;
   $("qsDoc").textContent      = `${cb.tipo === "01" ? "Factura" : cb.tipo === "03" ? "Boleta" : cb.tipo} · ${cb.serie}-${String(cb.correlativo).padStart(8,"0")}`;
+
+  // Total inline en el header (visible cuando está colapsado en mobile)
+  const sticky = $("summarySticky");
+  if (sticky) {
+    let h3 = sticky.querySelector("h3");
+    if (h3 && !h3.querySelector(".qsum-total-inline")) {
+      const span = document.createElement("span");
+      span.className = "qsum-total-inline";
+      h3.appendChild(span);
+    }
+    const inline = sticky.querySelector(".qsum-total-inline");
+    if (inline) inline.textContent = fmtMon(c.importeTotal);
+  }
 }
 
 // ── Re-render orquestal ─────────────────────────────────────────────

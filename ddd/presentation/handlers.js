@@ -6,6 +6,7 @@
 function onCambioItemForm() {
   renderTasaUI();
   renderPrecioUI();
+  renderFormulaPanel();
   renderCat53UI();
   validarCantidad();
   validarPrecio();

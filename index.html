@@ -228,7 +228,7 @@
               Cantidad
               <span class="help" data-tip="Decimal positivo, hasta 12 enteros y 10 decimales. Formato UBL n(12,10) según R.S. 117-2017/SUNAT Anexo I, campo cbc:InvoicedQuantity.">?</span>
             </label>
-            <input type="number" id="cantidad" value="1" min="0.0001" step="0.0001">
+            <input type="number" id="cantidad" value="1" step="0.01" inputmode="decimal">
             <small class="err" id="cantidadErr" hidden></small>
           </div>
           <div class="field">
@@ -267,7 +267,7 @@
             </div>
             <div class="field">
               <label for="precioUnit" id="precioUnitLabel">Valor unitario (sin IGV)</label>
-              <input type="number" id="precioUnit" value="100" min="0" step="0.01">
+              <input type="number" id="precioUnit" value="100" step="0.01" inputmode="decimal">
               <small class="hint" id="precioConvHint"></small>
               <small class="err" id="precioErr" hidden></small>
             </div>
@@ -287,12 +287,16 @@
             </div>
           </div>
           <div id="avisoCombinacion" class="alert warn" hidden></div>
+
+          <!-- Panel de ecuación en vivo (se rellena por renderFormulaPanel) -->
+          <div id="formulaPanel" class="formula-panel" hidden></div>
         </div>
 
-        <div class="sub-card">
+        <div class="sub-card sub-card--secondary">
           <h3>
-            Descuentos / cargos del ítem
-            <small>opcional — puedes agregar varios</small>
+            <span class="sub-card-num">+</span>
+            Descuentos y cargos extras
+            <small>opcional · se acumulan en este producto antes de guardarlo</small>
           </h3>
           <div class="grid">
             <div class="field span-2">
@@ -318,21 +322,35 @@
                 Valor
                 <span class="help" data-tip="Si afecta BI (ab=true en Cat.53), reduce/aumenta la base imponible y se recalcula el IGV. Si no afecta BI, solo ajusta el total final. Reglamento IGV (D.S. 029-94-EF) Art. 5 num. 13.">?</span>
               </label>
-              <input type="number" id="valorOp" value="0" min="0" step="0.5">
+              <input type="number" id="valorOp" value="0" step="0.5" inputmode="decimal">
             </div>
             <div class="field">
               <label>&nbsp;</label>
-              <button class="btn secondary" type="button" id="btnAddCargoItem">+ Agregar al ítem</button>
+              <button class="btn secondary" type="button" id="btnAddCargoItem" title="Agrega el descuento/cargo al producto actual (no lo guarda en la lista todavía)">
+                ➕ Aplicar al producto
+              </button>
             </div>
           </div>
           <div id="desc53Info" class="info-badge"></div>
           <ul class="chip-list" id="itemCargosList"></ul>
         </div>
 
-        <footer class="form-actions">
+        <footer class="form-actions form-actions--commit">
           <button class="btn ghost" type="button" id="btnCancelEdit" hidden>Cancelar edición</button>
-          <button class="btn primary" type="button" id="btnAddItem">+ Agregar producto</button>
-          <button class="btn primary" type="button" id="btnSaveEdit" hidden>Guardar cambios</button>
+          <button class="btn primary btn--lg" type="button" id="btnAddItem" title="Guarda este producto en la lista del comprobante">
+            <span class="btn-emoji">📥</span>
+            <span class="btn-text">
+              <span class="btn-main">Guardar producto en la lista</span>
+              <small class="btn-sub">Lo añade al comprobante · puedes seguir agregando más</small>
+            </span>
+          </button>
+          <button class="btn primary btn--lg" type="button" id="btnSaveEdit" hidden>
+            <span class="btn-emoji">💾</span>
+            <span class="btn-text">
+              <span class="btn-main">Guardar cambios</span>
+              <small class="btn-sub">Actualiza el producto editado</small>
+            </span>
+          </button>
         </footer>
       </section>
 

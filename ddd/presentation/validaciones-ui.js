@@ -43,11 +43,34 @@ function validarFecha() {
 }
 
 function validarCantidad() {
-  const v = parseFloat($("cantidad").value) || 0;
-  return setInvalid("cantidad", "cantidadErr", v > 0 ? "" : "Cantidad debe ser > 0.");
+  const raw = $("cantidad").value.trim();
+  const v = parseFloat(raw);
+  if (raw === "" || isNaN(v)) {
+    return setInvalid("cantidad", "cantidadErr", "Ingresa una cantidad.");
+  }
+  if (v <= 0) {
+    return setInvalid("cantidad", "cantidadErr", "La cantidad debe ser mayor a 0.");
+  }
+  return setInvalid("cantidad", "cantidadErr", "");
 }
 
 function validarPrecio() {
-  const v = parseFloat($("precioUnit").value) || 0;
-  return setInvalid("precioUnit", "precioErr", v >= 0 ? "" : "Precio no puede ser negativo.");
+  const raw = $("precioUnit").value.trim();
+  const v = parseFloat(raw);
+  if (raw === "" || isNaN(v)) {
+    return setInvalid("precioUnit", "precioErr", "Ingresa un precio.");
+  }
+  if (v < 0) {
+    return setInvalid("precioUnit", "precioErr", "El precio no puede ser negativo.");
+  }
+  // 0 solo válido en operaciones gratuitas (Cat.07 códigos 11-17, 21)
+  if (v === 0) {
+    const afec = $("afectacion") && $("afectacion").value;
+    const esGratuito = afec && (afec === "11" || afec === "12" || afec === "13" || afec === "14" || afec === "15" || afec === "16" || afec === "21");
+    if (!esGratuito) {
+      return setInvalid("precioUnit", "precioErr",
+        "Precio en 0 solo aplica a operaciones gratuitas (Cat.07 códigos 11-17/21). Cambia la afectación o ingresa un precio.");
+    }
+  }
+  return setInvalid("precioUnit", "precioErr", "");
 }

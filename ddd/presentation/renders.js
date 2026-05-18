@@ -55,6 +55,177 @@ function renderCorrelativoInfo() {
   }
 }
 
+// ── Panel de ecuación en vivo del ítem (con sustento normativo) ───
+// Muestra paso a paso cómo se calcula este producto: base, IGV, total.
+// Cada paso lleva su tooltip con norma exacta.
+function renderFormulaPanel() {
+  const el = $("formulaPanel");
+  if (!el) return;
+  // Si campos clave no están listos, ocultar
+  const cant   = parseFloat($("cantidad").value) || 0;
+  const precio = parseFloat($("precioUnit").value) || 0;
+  if (cant <= 0 || precio < 0) { el.hidden = true; el.innerHTML = ""; return; }
+
+  // Calcular el ítem con la lógica del dominio
+  const item = leerItemForm();
+  const regimen = (store.comprobante && store.comprobante.regimenIgv) || 18;
+  const r = calcItem(item, { tasaIgvOverride: regimen / 100 });
+  const trib  = r.trib;
+  const tasaPct = (r.tasa * 100).toFixed(2);
+  const sim = simboloMoneda(store.comprobante.moneda);
+  const fmt = n => `${sim} ${(n || 0).toFixed(2)}`;
+  const fmtRaw = n => (n === 0 || isNaN(n) ? "0" : Number(n).toFixed(10).replace(/\.?0+$/, ""));
+
+  // Construir filas según el grupo de afectación
+  const filas = [];
+
+  // 1) Total bruto
+  const totalValorRaw = cant * precio;
+  if (item.tipoPrecio === "incluido" && r.igvAplica) {
+    filas.push({
+      label: "Total con IGV ingresado",
+      eq: `${cant} × ${fmt(precio)}`,
+      result: fmt(totalValorRaw),
+      tip: "Cantidad × precio unitario ingresado (que ya incluye IGV). TUO Ley IGV (D.S. 055-99-EF) Art. 14.",
+    });
+    filas.push({
+      label: "Base imponible (V.V.)",
+      eq: `${fmt(totalValorRaw)} ÷ (1 + ${tasaPct}%)`,
+      result: fmt(r.baseImp),
+      tip: "Fórmula inversa: cuando el precio ingresado incluye IGV, la base se obtiene dividiendo entre (1+tasa). Derivado del Art. 14 TUO Ley IGV.",
+    });
+  } else {
+    filas.push({
+      label: "Base imponible (V.V.)",
+      eq: `${cant} × ${fmt(precio)}`,
+      result: fmt(r.baseImp),
+      tip: "Valor Venta = Cantidad × Valor Unitario (sin IGV). TUO Ley IGV (D.S. 055-99-EF) Art. 14. UBL: cbc:LineExtensionAmount.",
+    });
+  }
+
+  // 2) Descuentos/cargos por ítem que afectan BI (si hay)
+  if (r.cargosResultado && r.cargosResultado.length) {
+    let biAcum = r.baseImp;
+    let acumDelta = 0;
+    for (const cr of r.cargosResultado) {
+      if (!cr.afectaBI) continue;
+      const signo = cr.cat53.t === "desc" ? -1 : 1;
+      const factor = cr.factor != null ? (cr.factor * 100).toFixed(2) + "%" : fmt(cr.monto);
+      filas.push({
+        label: `${cr.cat53.t === "desc" ? "Descuento" : "Cargo"} Cat.53 ${cr.cat53.c}`,
+        eq: cr.factor != null ? `${fmt(r.baseImp)} × ${factor}` : factor,
+        result: (signo > 0 ? "+" : "−") + fmt(cr.monto),
+        tip: `${cr.cat53.d}. Catálogo SUNAT N° 53. Como afecta BI (ab=true), reduce/aumenta la base imponible y recalcula el IGV. Reglamento IGV (D.S. 029-94-EF) Art. 5 num. 13.`,
+      });
+      biAcum += signo * cr.monto;
+      acumDelta += signo * cr.monto;
+    }
+    if (acumDelta !== 0) {
+      filas.push({
+        label: "Base imp. final (BI)",
+        eq: `${fmt(r.baseImp)} ${acumDelta > 0 ? "+" : "−"} ${fmt(Math.abs(acumDelta))}`,
+        result: fmt(r.biFinal),
+        tip: "Base imponible ajustada por descuentos/cargos que afectan BI. Sobre este monto se calcula el IGV.",
+      });
+    }
+  }
+
+  // 3) IGV (o leyenda de no aplica)
+  if (r.igvAplica) {
+    filas.push({
+      label: `${trib.a} (${tasaPct}%)`,
+      eq: `${fmt(r.biFinal)} × ${tasaPct}%`,
+      result: fmt(r.igv),
+      tip: `IGV = Base Imponible × tasa. TUO Ley IGV (D.S. 055-99-EF) Art. 17. Tasa ${tasaPct}% ${regimen === 10.5 ? "(MYPE turismo, Leyes 31556+32219+32387)" : "(general)"}.`,
+    });
+  } else {
+    const grupoNombre = {
+      exonerada:   "Exonerado (Apéndice I Ley IGV)",
+      inafecta:    "Inafecto (Apéndice II Ley IGV)",
+      exportacion: "Exportación (Art. 33 Ley IGV)",
+    }[r.grupo] || "No gravado";
+    filas.push({
+      label: "IGV",
+      eq: grupoNombre,
+      result: fmt(0),
+      tip: `Esta operación no causa IGV. Afectación Cat.07 = ${item.afectacion}. ${r.grupo === "exonerada" ? "Exoneraciones del Apéndice I del TUO Ley IGV." : r.grupo === "inafecta" ? "Operaciones del Apéndice II — fuera del ámbito del impuesto." : r.grupo === "exportacion" ? "Exportación: tasa 0%, saldo a favor del exportador (Art. 33 Ley IGV)." : "Verificar la afectación elegida."}`,
+    });
+  }
+
+  // 4) Descuentos/cargos que no afectan BI
+  if (r.cargosResultado) {
+    for (const cr of r.cargosResultado) {
+      if (cr.afectaBI) continue;
+      const signo = cr.cat53.t === "desc" ? -1 : 1;
+      filas.push({
+        label: `${cr.cat53.t === "desc" ? "Descuento" : "Cargo"} Cat.53 ${cr.cat53.c} (no afecta BI)`,
+        eq: cr.factor != null ? `${fmt(r.baseImp)} × ${(cr.factor*100).toFixed(2)}%` : fmt(cr.monto),
+        result: (signo > 0 ? "+" : "−") + fmt(cr.monto),
+        tip: `${cr.cat53.d}. NO recalcula el IGV; solo ajusta el total. Catálogo SUNAT N° 53.`,
+      });
+    }
+  }
+
+  // 5) ICBPER si aplica
+  if (r.icbper > 0) {
+    filas.push({
+      label: "ICBPER (Cat.05 7152)",
+      eq: `${cant} × ${fmt(item.tasaInput || 0)}`,
+      result: fmt(r.icbper),
+      tip: "ICBPER = Cantidad × monto fijo por bolsa (S/0.50 desde 2023). Ley 30884. NO es porcentaje sobre base; se registra como tributo OTH.",
+    });
+  }
+
+  // 6) Total final
+  filas.push({
+    label: "TOTAL del ítem",
+    eq: r.igvAplica
+      ? `${fmt(r.biFinal)} + ${fmt(r.igv)}${r.icbper > 0 ? " + " + fmt(r.icbper) : ""}`
+      : fmt(r.biFinal),
+    result: fmt(r.total),
+    tip: "Total a pagar de esta línea. UBL: cac:InvoiceLine/cbc:LineExtensionAmount (BI) + cac:TaxTotal (IGV).",
+    isTotal: true,
+  });
+
+  // Build HTML
+  const grupoTxt = {
+    gravada:     "Operación gravada con IGV",
+    exonerada:   "Operación exonerada",
+    inafecta:    "Operación inafecta",
+    exportacion: "Operación de exportación",
+  }[r.grupo] || "Operación";
+  const emoji = r.grupo === "gravada" ? "🧮" : r.grupo === "exonerada" ? "🟢" : r.grupo === "inafecta" ? "⚪" : "🌍";
+  const claseGrupo = r.grupo === "gravada" ? "" : "fp-exonerada";
+  const tasaNorma  = regimen === 10.5
+    ? "Tasa MYPE turismo (Leyes 31556 + 32219 + 32387) — vigente hasta 31-dic-2026."
+    : "Tasa IGV general 18% (15.5% IGV + 2.5% IPM en 2026 por Ley 32387).";
+
+  el.className = `formula-panel ${claseGrupo}`;
+  el.hidden = false;
+  el.innerHTML = `
+    <div class="fp-head">
+      <span class="fp-head-emoji">${emoji}</span>
+      <span>Ecuación en vivo · ${grupoTxt}</span>
+      <span class="fp-help" style="margin-left:auto">
+        <span class="help" data-tip="Este panel muestra cómo se calcula el ítem actual paso a paso, con referencia a la norma SUNAT. Los números se actualizan en vivo mientras editas el formulario. Sustento: TUO Ley IGV (D.S. 055-99-EF) Arts. 13, 14 y 17 · Reglamento IGV (D.S. 029-94-EF) Art. 5 · R.S. 117-2017/SUNAT Anexo I.">?</span>
+      </span>
+    </div>
+    ${filas.map(f => `
+      <div class="fp-row${f.isTotal ? " fp-total" : ""}">
+        <span class="fp-label">${escapeHtml(f.label)}</span>
+        <span class="fp-eq">${escapeHtml(f.eq)}</span>
+        <span class="fp-arrow">=</span>
+        <span class="fp-result">${escapeHtml(f.result)}</span>
+        ${f.tip ? `<span class="fp-help"><span class="help" data-tip="${escapeHtml(f.tip)}">?</span></span>` : ""}
+      </div>
+    `).join("")}
+    <div class="fp-foot">
+      <span class="fp-foot-emoji">📜</span>
+      <span>${tasaNorma}</span>
+    </div>
+  `;
+}
+
 // ── UI del precio: relabel del input + hint con conversión equivalente ──
 // Si el usuario eligió "Valor unitario (sin IGV)", muestra como hint el
 // precio unitario equivalente (con IGV). Y viceversa. Cero efecto sobre cálculo.
@@ -375,6 +546,7 @@ function renderAll() {
   renderAvisoReceptor();
   renderTasaUI();
   renderPrecioUI();
+  renderFormulaPanel();
   renderCat53UI();
   renderCat53GlobalUI();
   renderItemCargosList();

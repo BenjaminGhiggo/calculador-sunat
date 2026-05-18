@@ -4,6 +4,63 @@
 //         remota funciona (ver infrastructure/data-json-loader.js).
 // ════════════════════════════════════════════════════════════════════
 
+// Cat.01 — Tipo de Comprobante (R.S. 007-99/SUNAT Art. 2 + Anexo V R.S. 318-2017)
+let CAT01 = {
+  "01": { nombre: "Factura",          icon: "🧾", largo: "FACTURA ELECTRÓNICA" },
+  "03": { nombre: "Boleta de venta",  icon: "📃", largo: "BOLETA ELECTRÓNICA" },
+  "07": { nombre: "Nota de Crédito",  icon: "↩️", largo: "NOTA DE CRÉDITO ELECTRÓNICA" },
+  "08": { nombre: "Nota de Débito",   icon: "↪️", largo: "NOTA DE DÉBITO ELECTRÓNICA" },
+};
+
+// Cat.02 — Monedas (códigos ISO 4217)
+let CAT02 = {
+  "PEN": { sim: "S/",  nombre: "Soles",              largo: "SOLES" },
+  "USD": { sim: "US$", nombre: "Dólares",            largo: "DÓLARES AMERICANOS" },
+  "EUR": { sim: "€",   nombre: "Euros",              largo: "EUROS" },
+};
+
+// Cat.06 — Tipo de documento de identidad
+let CAT06 = {
+  "0": { nombre: "Sin documento",       corto: "-",        icon: "—"  },
+  "1": { nombre: "DNI",                 corto: "DNI",      icon: "🪪" },
+  "4": { nombre: "Carnet de Extranjería", corto: "CE",     icon: "🛂" },
+  "6": { nombre: "RUC",                 corto: "RUC",      icon: "🏢" },
+  "7": { nombre: "Pasaporte",           corto: "Pas",      icon: "📕" },
+  "A": { nombre: "Cédula Diplomática",  corto: "CD",       icon: "📜" },
+};
+
+// Cat.51 — Tipo de Operación (R.S. 252-2019/SUNAT)
+let CAT51 = {
+  "0101": "Venta interna",
+  "0112": "Venta interna — Sustenta gasto deducible PN",
+  "0113": "Venta interna NRUS",
+  "0200": "Exportación de bienes",
+  "0201": "Exportación de servicios (prestados en Perú)",
+  "0301": "Operaciones con carta de porte aéreo nacional",
+  "0401": "Ventas no domiciliados (sin exportación)",
+  "1001": "Operación sujeta a detracción",
+  "2001": "Operación sujeta a percepción",
+};
+
+// Régimen IGV vigente — TUO Ley IGV (D.S. 055-99-EF) Art. 17 + Leyes 31556/32219/32387
+let REGIMENES_IGV = [
+  {
+    valor: 18,
+    label: "General — 18%",
+    detalle: "Tasa general del IGV: 15.5% IGV + 2.5% IPM en 2026 (Ley 32387). Total combinado 18%.",
+    norma: "D.S. 055-99-EF Art. 17 + Ley 32387",
+    notaUi: "Tasa general 18% (IGV+IPM).",
+  },
+  {
+    valor: 10.5,
+    label: "MYPE turismo — 10.5%",
+    detalle: "8% IGV + 2.5% IPM. Solo MYPE de restaurantes (CIIU 5610), hoteles y alojamientos turísticos (CIIU 5510) con ventas ≤ 1700 UIT y ≥70% de ingresos en esos giros.",
+    norma: "Ley 31556 + Ley 32219 + Ley 32387",
+    notaUi: "MYPE turismo (Ley 32387) — vigente hasta 31-dic-2026.",
+    vigenciaHasta: "2026-12-31",
+  },
+];
+
 // Cat.03 — Unidades de medida (UN/ECE Rec 20)
 let CAT03 = {
   "NIU":"Unidad (bienes)","ZZ":"Servicio","KGM":"Kilogramo","GRM":"Gramo",

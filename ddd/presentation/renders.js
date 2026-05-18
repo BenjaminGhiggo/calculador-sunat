@@ -13,7 +13,9 @@ function renderAvisoReceptor() {
                      || (tipo === "03" && tipoDoc === "6");
   if (inconsistente) {
     el.hidden = false;
-    el.innerHTML = `⚠️ <span><b>${tipo === "01" ? "Factura" : "Boleta"}</b> normalmente lleva <b>${tipo === "01" ? "RUC" : "DNI"}</b> en el receptor.</span>`;
+    const nombreComp = (CAT01[tipo] && CAT01[tipo].nombre) || tipo;
+    const docEsperado = tipo === "01" ? "RUC" : "DNI";
+    el.innerHTML = `⚠️ <span><b>${nombreComp}</b> normalmente lleva <b>${docEsperado}</b> en el receptor.</span>`;
   } else {
     el.hidden = true;
   }
@@ -31,9 +33,9 @@ function renderRegimenInfo() {
   const el = $("regimenInfo");
   if (!el) return;
   const r = store.comprobante.regimenIgv;
-  el.textContent = (r === 10.5)
-    ? "MYPE turismo (Ley 32387) — vigente hasta 31-dic-2026."
-    : "Tasa general 18% (IGV+IPM).";
+  // Lookup desde REGIMENES_IGV (dominio) — single source of truth
+  const reg = (typeof REGIMENES_IGV !== "undefined") && REGIMENES_IGV.find(x => x.valor === r);
+  el.textContent = reg ? reg.notaUi : `Tasa ${r}%`;
 }
 
 function renderCorrelativoInfo() {
@@ -199,7 +201,24 @@ function renderItemList() {
   }
   const regimen = (store.comprobante && store.comprobante.regimenIgv) || 18;
   const ctx = { tasaIgvOverride: regimen / 100 };
-  let html = '<table class="product-list-table"><thead><tr><th>#</th><th>Cód.</th><th>Producto</th><th>Cant.</th><th>Und</th><th>P.Unit</th><th>Total</th><th></th></tr></thead><tbody>';
+  // Headers coherentes con la norma SUNAT: V.U. (sin IGV) y P.U. (con IGV) son
+  // siempre distintos cuando hay IGV. Relación: P.U. = V.U. × (1 + tasa).
+  const headers = [
+    { k: "#",       t: "" },
+    { k: "Cód.",    t: "" },
+    { k: "Producto",t: "" },
+    { k: "Cant.",   t: "" },
+    { k: "Und",     t: "" },
+    { k: "V.U.",    t: "Valor unitario — sin IGV. Base imponible por unidad. TUO Ley IGV (D.S. 055-99-EF) Art. 14. UBL: cbc:PriceAmount." },
+    { k: "P.U.",    t: "Precio unitario — con IGV. P.U. = V.U. × (1 + tasa). Reglamento de Comprobantes de Pago (R.S. 007-99) Art. 8. UBL: cac:AlternativeConditionPrice." },
+    { k: "Total",   t: "Total de la línea = BI + IGV ± cargos/descuentos del ítem + ICBPER." },
+    { k: "",        t: "" },
+  ];
+  let html = '<table class="product-list-table"><thead><tr>' +
+    headers.map(h =>
+      `<th><span class="th-wrap">${h.k}${h.t ? `<span class="tip-i" data-tip="${escapeHtml(h.t)}">i</span>` : ""}</span></th>`
+    ).join("") +
+    '</tr></thead><tbody>';
   store.items.forEach((p, i) => {
     const r = calcItem(p, ctx);
     const editing = store.ui.editingItemId === p.id;
@@ -210,6 +229,7 @@ function renderItemList() {
       <td>${p.cantidad.toFixed(2)}</td>
       <td>${escapeHtml(p.unidad)}</td>
       <td>${fmtMon(r.valorUnitario)}</td>
+      <td>${r.igvAplica ? fmtMon(r.precioVentaUnitario) : "—"}</td>
       <td>${fmtMon(r.total)}</td>
       <td onclick="event.stopPropagation()"><button class="btn-remove" onclick="eliminarItem(${p.id})" aria-label="Eliminar">✕</button></td>
     </tr>`;
@@ -329,7 +349,9 @@ function renderSummarySticky(c) {
   $("qsPercep").textContent   = c.percepcion > 0 ? fmtMon(c.percepcion) : "—";
   $("qsTotal").textContent    = fmtMon(c.importeTotal);
   const cb = store.comprobante;
-  $("qsDoc").textContent      = `${cb.tipo === "01" ? "Factura" : cb.tipo === "03" ? "Boleta" : cb.tipo} · ${cb.serie}-${String(cb.correlativo).padStart(8,"0")}`;
+  // Lookup CAT01 (dominio)
+  const tipoNombreCorto = (CAT01[cb.tipo] && CAT01[cb.tipo].nombre) || cb.tipo;
+  $("qsDoc").textContent  = `${tipoNombreCorto} · ${cb.serie}-${String(cb.correlativo).padStart(8,"0")}`;
 
   // Total inline en el header (visible cuando está colapsado en mobile)
   const sticky = $("summarySticky");

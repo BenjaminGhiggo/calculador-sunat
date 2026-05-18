@@ -72,12 +72,7 @@
               <span class="exp-only">Tipo (Cat.01)</span>
               <span class="help" data-tip="Catálogo SUNAT N° 01: 01 Factura (cliente con RUC, da crédito fiscal), 03 Boleta (consumidor final con DNI), 07 Nota de Crédito y 08 Nota de Débito ajustan un CPE previo. R.S. 007-99/SUNAT Art. 2 y 4.">?</span>
             </label>
-            <select id="tipoComprobante">
-              <option value="03">📃 Boleta de venta</option>
-              <option value="01">🧾 Factura</option>
-              <option value="07">↩️ Nota de crédito</option>
-              <option value="08">↪️ Nota de débito</option>
-            </select>
+            <select id="tipoComprobante"></select>
           </div>
           <div class="field">
             <label for="serie">
@@ -109,26 +104,14 @@
               Moneda
               <span class="help" data-tip="Código ISO 4217 (Cat.02 SUNAT). USD/EUR requieren tipo de cambio venta SBS del día de la operación. Reglamento IGV (D.S. 029-94-EF) Art. 5.">?</span>
             </label>
-            <select id="moneda">
-              <option value="PEN">S/  Soles</option>
-              <option value="USD">$  Dólares</option>
-              <option value="EUR">€  Euros</option>
-            </select>
+            <select id="moneda"></select>
           </div>
           <div class="field exp-only">
             <label for="tipoOperacion">
               Tipo de operación (Cat.51)
               <span class="help" data-tip="Catálogo SUNAT N° 51 (sustituido por R.S. 252-2019/SUNAT): 0101 venta interna · 0112 gasto deducible PN · 0200 exportación bienes · 1001 sujeta a detracción · 2001 sujeta a percepción. Va en listID del cbc:InvoiceTypeCode.">?</span>
             </label>
-            <select id="tipoOperacion">
-              <option value="0101">0101 — Venta interna</option>
-              <option value="0112">0112 — Gasto deducible PN</option>
-              <option value="0200">0200 — Exportación bienes</option>
-              <option value="0201">0201 — Exportación servicios</option>
-              <option value="0401">0401 — Ventas a no domiciliados</option>
-              <option value="1001">1001 — Sujeta a detracción</option>
-              <option value="2001">2001 — Sujeta a percepción</option>
-            </select>
+            <select id="tipoOperacion"></select>
           </div>
           <div class="field">
             <label for="regimenIgv">
@@ -136,10 +119,7 @@
               <span class="exp-only">Régimen IGV (override CAT05[1000])</span>
               <span class="help" data-tip="General: 18% (IGV 16% + IPM 2%). TUO Ley IGV D.S. 055-99-EF Art. 17. MYPE turismo: 10.5% para restaurantes/hoteles ≥70% ingresos y ventas ≤1700 UIT, vigente hasta 31-dic-2026. Leyes 31556, 32219 y 32387.">?</span>
             </label>
-            <select id="regimenIgv">
-              <option value="18">General — 18%</option>
-              <option value="10.5">MYPE turismo — 10.5%</option>
-            </select>
+            <select id="regimenIgv"></select>
             <small class="hint" id="regimenInfo"></small>
           </div>
         </div>
@@ -181,13 +161,7 @@
               Documento
               <span class="help" data-tip="Catálogo 06 (Anexo 8 SUNAT): 0 sin doc, 1 DNI, 4 C.Extranjería, 6 RUC, 7 Pasaporte. Factura exige RUC; Boleta exige DNI/RUC si total > S/700.">?</span>
             </label>
-            <select id="receptorTipoDoc">
-              <option value="1">🪪 DNI</option>
-              <option value="6">🏢 RUC</option>
-              <option value="4">🛂 C. Extranjería</option>
-              <option value="7">📕 Pasaporte</option>
-              <option value="0">— Sin documento</option>
-            </select>
+            <select id="receptorTipoDoc"></select>
           </div>
           <div class="field">
             <label for="receptorDoc">
@@ -467,15 +441,7 @@
               Previsualizar como
               <span class="help" data-tip="Solo cambia el formato visual; los números y el XML no cambian.">?</span>
             </label>
-            <select id="canalPreview">
-              <option value="sunat">📃 SUNAT oficial (Boleta/Factura electrónica)</option>
-              <option value="ticket">🧾 Ticket POS / bodega (impresora térmica 58mm)</option>
-              <option value="consumidor">🛒 Consumidor final retail (precio total)</option>
-              <option value="b2b">💼 Cotización B2B (neto + IGV)</option>
-              <option value="ecommerce">🌐 Ecommerce / marketplace (precio destacado + cuotas)</option>
-              <option value="email">✉️ Email a cliente</option>
-              <option value="whatsapp">💬 Mensaje WhatsApp</option>
-            </select>
+            <select id="canalPreview"></select>
             <small class="hint" id="canalHint">SUNAT — exactamente lo que se imprime / se envía al PSE.</small>
           </div>
         </div>

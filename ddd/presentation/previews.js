@@ -4,15 +4,19 @@
 // email, WhatsApp. Cero efecto sobre el cálculo o el XML — solo formato visual.
 // ════════════════════════════════════════════════════════════════════
 
-const CANALES_INFO = {
-  sunat:      "SUNAT oficial — exactamente lo que se imprime / se envía al PSE.",
-  ticket:     "Ticket POS térmico 58 mm — formato típico de bodega o cajero.",
-  consumidor: "Consumidor final retail — pizarra / etiqueta con precio total.",
-  b2b:        "Cotización B2B — comprador empresarial necesita ver neto + IGV.",
-  ecommerce:  "Marketplace (Mercado Libre / web) — precio destacado y cuotas.",
-  email:      "Email transaccional al cliente — formato HTML resumido.",
-  whatsapp:   "Mensaje de WhatsApp — texto plano breve, para reenviar al cliente.",
-};
+// Canales de preview — orden mostrado en el selector + label e icon + descripción
+const CANALES_PREVIEW = [
+  { id: "sunat",      icon: "📃", label: "SUNAT oficial (Boleta/Factura electrónica)",        desc: "SUNAT oficial — exactamente lo que se imprime / se envía al PSE." },
+  { id: "ticket",     icon: "🧾", label: "Ticket POS / bodega (impresora térmica 58mm)",       desc: "Ticket POS térmico 58 mm — formato típico de bodega o cajero." },
+  { id: "consumidor", icon: "🛒", label: "Consumidor final retail (precio total)",             desc: "Consumidor final retail — pizarra / etiqueta con precio total." },
+  { id: "b2b",        icon: "💼", label: "Cotización B2B (neto + IGV)",                        desc: "Cotización B2B — comprador empresarial necesita ver neto + IGV." },
+  { id: "ecommerce",  icon: "🌐", label: "Ecommerce / marketplace (precio destacado + cuotas)", desc: "Marketplace (Mercado Libre / web) — precio destacado y cuotas." },
+  { id: "email",      icon: "✉️", label: "Email a cliente",                                    desc: "Email transaccional al cliente — formato HTML resumido." },
+  { id: "whatsapp",   icon: "💬", label: "Mensaje WhatsApp",                                   desc: "Mensaje de WhatsApp — texto plano breve, para reenviar al cliente." },
+];
+
+// Lookup rápido id → desc (retrocompat con código previo)
+const CANALES_INFO = CANALES_PREVIEW.reduce((acc, c) => (acc[c.id] = c.desc, acc), {});
 
 function renderComprobantePreview(c) {
   const el = $("comprobantePreview");
@@ -35,11 +39,12 @@ function renderComprobantePreview(c) {
 // ── 1) SUNAT oficial ──
 function previewSunat(c) {
   const cb = store.comprobante;
-  const tipoNombre = { "01":"FACTURA ELECTRÓNICA","03":"BOLETA ELECTRÓNICA","07":"NOTA DE CRÉDITO ELECTRÓNICA","08":"NOTA DE DÉBITO ELECTRÓNICA" }[cb.tipo] || "COMPROBANTE ELECTRÓNICO";
+  // Lookups desde el dominio (CAT01, CAT02, CAT06) — single source of truth
+  const tipoNombre    = (CAT01[cb.tipo] && CAT01[cb.tipo].largo) || "COMPROBANTE ELECTRÓNICO";
+  const monedaNombre  = nombreLargoMoneda(cb.moneda);
+  const tipoDocNombre = (CAT06[cb.receptor.tipoDoc] && CAT06[cb.receptor.tipoDoc].corto) || "Doc";
   const date = new Date(cb.fechaEmision + "T00:00:00").toLocaleDateString("es-PE", { day: "2-digit", month: "long", year: "numeric" });
   const serie = cb.serie, correlativo = String(cb.correlativo).padStart(6, "0");
-  const monedaNombre = { PEN: "SOLES", USD: "DÓLARES AMERICANOS", EUR: "EUROS" }[cb.moneda] || cb.moneda;
-  const tipoDocNombre = { "1":"DNI","6":"RUC","4":"CE","7":"Pasaporte","0":"-" }[cb.receptor.tipoDoc] || "Doc";
   const lines = c.itemsRes.map((r, i) => {
     const p = r.item;
     return `<tr>
@@ -106,11 +111,14 @@ function previewSunat(c) {
 // ── 2) Ticket POS térmico (58 mm) ──
 function previewTicket(c) {
   const cb = store.comprobante;
-  const tipoNombre = { "01":"FACTURA","03":"BOLETA","07":"NC","08":"ND" }[cb.tipo] || "DOC";
+  // Tipos cortos (3 chars máx) derivados del nombre del catálogo
+  const TIPOS_CORTOS = { "01": "FACTURA", "03": "BOLETA", "07": "NC", "08": "ND" };
+  const tipoNombre    = TIPOS_CORTOS[cb.tipo] || "DOC";
+  const tipoDocItem   = CAT06[cb.receptor.tipoDoc];
+  const tipoDocNombre = (tipoDocItem && cb.receptor.tipoDoc !== "0") ? tipoDocItem.corto : "";
   const serie = cb.serie, correlativo = String(cb.correlativo).padStart(6, "0");
   const date = new Date(cb.fechaEmision + "T00:00:00").toLocaleDateString("es-PE");
   const time = new Date().toLocaleTimeString("es-PE").slice(0, 5);
-  const tipoDocNombre = { "1":"DNI","6":"RUC","4":"CE","7":"Pas","0":"" }[cb.receptor.tipoDoc] || "";
   const pad = (l, r, w = 32) => {
     const s = String(l), e = String(r);
     const sp = Math.max(1, w - s.length - e.length);
@@ -270,7 +278,8 @@ function previewEcommerce(c) {
 // ── 6) Email transaccional ──
 function previewEmail(c) {
   const cb = store.comprobante;
-  const tipoNombre = { "01":"factura","03":"boleta","07":"nota de crédito","08":"nota de débito" }[cb.tipo] || "comprobante";
+  // Nombre legible del comprobante (en minúsculas para el cuerpo del email)
+  const tipoNombre = ((CAT01[cb.tipo] && CAT01[cb.tipo].nombre) || "comprobante").toLowerCase();
   const serie = cb.serie, correlativo = String(cb.correlativo).padStart(6, "0");
   const rows = c.itemsRes.map(r => {
     const p = r.item;
@@ -320,7 +329,8 @@ function previewEmail(c) {
 // ── 7) WhatsApp ──
 function previewWhatsApp(c) {
   const cb = store.comprobante;
-  const tipoNombre = { "01":"factura","03":"boleta","07":"NC","08":"ND" }[cb.tipo] || "doc";
+  const WA_CORTOS = { "01": "factura", "03": "boleta", "07": "NC", "08": "ND" };
+  const tipoNombre = WA_CORTOS[cb.tipo] || ((CAT01[cb.tipo] && CAT01[cb.tipo].nombre) || "doc").toLowerCase();
   const serie = cb.serie, correlativo = String(cb.correlativo).padStart(6, "0");
   const items = c.itemsRes.map(r => {
     const p = r.item;

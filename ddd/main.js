@@ -140,23 +140,52 @@ async function init() {
   // 3) Cargar persistencia (sobreescribe defaults)
   cargar();
 
-  // 4) Poblar selects
+  // 4) Poblar selects desde el dominio (single source of truth)
+  // Cat.01 — Tipo de comprobante
+  populateSelect("tipoComprobante", Object.entries(CAT01),
+    ([, v]) => `${v.icon} ${v.nombre}`, ([k]) => k);
+  // Cat.02 — Monedas
+  populateSelect("moneda", Object.entries(CAT02),
+    ([, v]) => `${v.sim}  ${v.nombre}`, ([k]) => k);
+  // Cat.51 — Tipo de operación
+  if ($("tipoOperacion")) {
+    populateSelect("tipoOperacion", Object.entries(CAT51),
+      ([k, v]) => `${k} — ${v}`, ([k]) => k);
+  }
+  // Régimen IGV
+  if ($("regimenIgv")) {
+    populateSelect("regimenIgv", REGIMENES_IGV,
+      r => r.label, r => String(r.valor));
+  }
+  // Cat.06 — Tipo de documento del receptor
+  populateSelect("receptorTipoDoc", Object.entries(CAT06),
+    ([k, v]) => `${v.icon} ${v.nombre}${k !== "0" ? " (" + k + ")" : ""}`, ([k]) => k);
+
+  // Cat.03 — Unidades de medida
+  populateSelect("unidad", Object.entries(CAT03),
+    ([k, v]) => `${k} — ${v}`, ([k]) => k);
+
+  // Cat.07 — Afectación IGV (agrupado por grupo SUNAT)
   const afecGroups = {
     "Gravadas":    Object.entries(CAT07).filter(([k]) => k.startsWith("1")).map(([k,v]) => ({k,v})),
     "Exoneradas":  Object.entries(CAT07).filter(([k]) => k.startsWith("2")).map(([k,v]) => ({k,v})),
     "Inafectas":   Object.entries(CAT07).filter(([k]) => k.startsWith("3")).map(([k,v]) => ({k,v})),
     "Exportación": Object.entries(CAT07).filter(([k]) => k.startsWith("4")).map(([k,v]) => ({k,v})),
   };
-  populateSelect("unidad",   Object.entries(CAT03), ([k,v]) => `${k} — ${v}`, ([k]) => k);
   populateSelectGrouped("afectacion", afecGroups, ({k,v}) => `${k} — ${v}`, ({k}) => k);
-  populateSelect("tributo",  Object.entries(CAT05), ([k,v]) => `${k} — ${v.a} — ${v.n}`, ([k]) => k);
 
+  // Cat.05 — Tributos
+  populateSelect("tributo", Object.entries(CAT05),
+    ([k, v]) => `${k} — ${v.a} — ${v.n}`, ([k]) => k);
+
+  // Cat.53 — Cargos/descuentos a nivel ítem (agrupado por tipo)
   const cat53Items = getCat53Items();
   populateSelectGrouped("codigo53", {
     "Descuentos": cat53Items.filter(c => c.t === "desc"),
     "Cargos":     cat53Items.filter(c => c.t === "cargo"),
   }, e => `${e.c} — ${e.d}`, e => e.c);
 
+  // Cat.53 — Cargos/descuentos a nivel global (agrupado por tipo)
   const cat53Globals = getCat53Globals();
   populateSelectGrouped("codigo53Global", {
     "Descuentos":   cat53Globals.filter(c => c.t === "desc"),
@@ -165,6 +194,12 @@ async function init() {
   }, e => `${e.c} — ${e.d}`, e => e.c);
 
   populateSelect("producto", PRODUCTOS, e => e, e => e);
+
+  // Canales de preview (UI, pero un solo lugar)
+  if ($("canalPreview") && typeof CANALES_PREVIEW !== "undefined") {
+    populateSelect("canalPreview", CANALES_PREVIEW,
+      c => `${c.icon} ${c.label}`, c => c.id);
+  }
 
   // 5) Reflejar comprobante guardado en el form
   escribirComprobanteForm();

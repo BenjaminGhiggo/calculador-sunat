@@ -5,8 +5,16 @@
 
 const $ = id => document.getElementById(id);
 
-// ── Format helpers ───────────────────────────────────────────────────
-function simboloMoneda(m) { return { PEN: "S/", USD: "US$", EUR: "€" }[m] || m; }
+// ── Format helpers (usan CAT02 del dominio como fuente única) ───────
+function simboloMoneda(m) {
+  return (CAT02 && CAT02[m] && CAT02[m].sim) || m;
+}
+function nombreMoneda(m) {
+  return (CAT02 && CAT02[m] && CAT02[m].nombre) || m;
+}
+function nombreLargoMoneda(m) {
+  return (CAT02 && CAT02[m] && CAT02[m].largo) || m;
+}
 function fmtMon(n)    { return `${simboloMoneda(store.comprobante.moneda)} ${(n || 0).toFixed(2)}`; }
 function fmtMonNeg(n) { return n > 0 ? `-${fmtMon(n)}` : fmtMon(0); }
 
